@@ -1,13 +1,10 @@
 package Web3j;
 
 import org.web3j.crypto.Credentials;
-import org.web3j.crypto.WalletUtils;
 import org.web3j.model.NumberContract;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.http.HttpService;
 import org.web3j.tx.gas.StaticGasProvider;
-
-import java.io.File;
 import java.math.BigInteger;
 
 public class Web3jMain {
