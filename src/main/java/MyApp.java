@@ -1,5 +1,6 @@
 
 
+import Web3j.Web3jMain;
 import com.slack.api.bolt.App;
 import com.slack.api.bolt.context.builtin.SlashCommandContext;
 import com.slack.api.bolt.handler.builtin.SlashCommandHandler;
@@ -32,6 +33,8 @@ public class MyApp {
 
         var app = new App();
 
+
+        Web3jMain web3j = new Web3jMain();
 
         app.command("/info", (req, ctx) -> {
             return ctx.ack(res -> res.responseType("in_channel").text("I'm a bot to interact with Smart Contracts and listen to events"));
