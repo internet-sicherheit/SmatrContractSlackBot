@@ -1,0 +1,27 @@
+//        app.command("/info", (req, ctx) -> {
+//
+//            try {
+//                System.out.println(numberContract.giveStoredNumber().send().toString());
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//
+//            return  ctx.ack();
+//        });
+
+
+
+//        app.command("/hello2", (req, ctx) -> {
+//            // ctx.client() holds a valid bot token
+//            ChatPostMessageResponse response = ctx.client().chatPostMessage(r -> r
+//                    .channel(ctx.getChannelId())
+//                    .text(":wave: How are you?")
+//            );
+//            return ctx.ack();
+//        });
+
+
+//        app.command("/hello3", (req, ctx) -> {
+//            ChatPostMessageResponse response = ctx.say(":wave: How are you?");
+//            return ctx.ack();
+//        });
