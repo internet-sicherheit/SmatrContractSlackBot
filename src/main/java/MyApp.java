@@ -4,8 +4,10 @@ import ContractDeployment.DeployContract;
 import Web3j.Web3jMain;
 import com.slack.api.bolt.App;
 
+import com.slack.api.bolt.context.builtin.SlashCommandContext;
 import com.slack.api.bolt.jetty.SlackAppServer;
 
+import com.slack.api.methods.SlackApiException;
 import com.slack.api.methods.response.chat.ChatPostMessageResponse;
 import com.slack.api.webhook.WebhookResponse;
 
@@ -18,6 +20,7 @@ import com.slack.api.model.event.MessageEvent;
 import org.web3j.model.NumberContract;
 import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.methods.request.EthFilter;
+import org.web3j.protocol.core.methods.response.Log;
 
 import java.math.BigInteger;
 import java.util.regex.Pattern;
@@ -43,7 +46,7 @@ public class MyApp {
 
         //   Store Number contract
         //  change info to other command
-        app.command("/info", (req, ctx) -> {
+        app.command("/storenumber", (req, ctx) -> {
             String botRespondText;
             String commandArgText = req.getPayload().getText();
             int number;
@@ -69,13 +72,15 @@ public class MyApp {
         });
 
 
-        app.command("/hello1", (req, ctx) -> {
+        app.command("/listentoallevents", (req, ctx) -> {
 
 
             EthFilter filter = new EthFilter(DefaultBlockParameterName.EARLIEST, DefaultBlockParameterName.LATEST, numberContract.getContractAddress().substring(2));
 
 
-            web3j.getWeb3j().ethLogFlowable(filter).subscribe(log -> System.out.println(log.toString()));
+            web3j.getWeb3j().ethLogFlowable(filter).subscribe(log -> botPostListenerMessage(log, ctx));
+
+
 
 
 //            numberContract.newNumberEventFlowable(DefaultBlockParameterName.EARLIEST, DefaultBlockParameterName.LATEST)
@@ -88,7 +93,7 @@ public class MyApp {
 //                        //Perform processing based on event values
 //                    });
 
-            return ctx.ack("Listener");
+            return ctx.ack("Added listener to contract");
         });
 
 
@@ -96,7 +101,7 @@ public class MyApp {
             // Post a message via response_url
             System.out.println("he");
             WebhookResponse result = ctx.respond(res -> res
-                    .responseType("in_channel") // or "in_channnel"
+                    .responseType("in_channel") // or "in_channel"
                     .text("Hi there!") // blocks, attachments are also available
             );
             return ctx.ack(); // ack() here doesn't post a message
@@ -156,6 +161,17 @@ public class MyApp {
 
         var server = new SlackAppServer(app);
         server.start();
+    }
+
+    private static void botPostListenerMessage(Log log, SlashCommandContext ctx) throws IOException, SlackApiException {
+
+        System.out.println(log.toString());
+
+        //currently called whenever there is any event. Shall only be called when a number is stored in future
+        //look at print for now
+        //ctx.say("addedNumber");
+
+
     }
 
 
