@@ -1,26 +1,25 @@
 
 
+import ContractDeployment.DeployContract;
 import Web3j.Web3jMain;
 import com.slack.api.bolt.App;
-import com.slack.api.bolt.context.builtin.SlashCommandContext;
-import com.slack.api.bolt.handler.builtin.SlashCommandHandler;
+
 import com.slack.api.bolt.jetty.SlackAppServer;
-import com.slack.api.bolt.request.builtin.SlashCommandRequest;
-import com.slack.api.bolt.response.Response;
-import com.slack.api.methods.SlackApiException;
+
 import com.slack.api.methods.response.chat.ChatPostMessageResponse;
 import com.slack.api.webhook.WebhookResponse;
 
 import com.slack.api.methods.MethodsClient;
 import com.slack.api.methods.response.chat.ChatGetPermalinkResponse;
-import com.slack.api.methods.response.chat.ChatPostMessageResponse;
 import com.slack.api.methods.response.reactions.ReactionsAddResponse;
 import com.slack.api.model.event.MessageEvent;
 
-import com.slack.api.methods.response.chat.ChatPostMessageResponse;
-import com.slack.api.model.event.ReactionAddedEvent;
 
-import java.util.Arrays;
+import org.web3j.model.NumberContract;
+import org.web3j.protocol.core.DefaultBlockParameterName;
+import org.web3j.protocol.core.methods.request.EthFilter;
+
+import java.math.BigInteger;
 import java.util.regex.Pattern;
 
 import java.io.IOException;
@@ -30,15 +29,68 @@ public class MyApp {
         // App expects env variables (SLACK_BOT_TOKEN, SLACK_SIGNING_SECRET)
 
 
-
         var app = new App();
 
 
+        //
         Web3jMain web3j = new Web3jMain();
 
+        NumberContract numberContract = web3j.getNumberContract();
+
+//        app.command("/info", (req, ctx) -> {
+//            return ctx.ack(res -> res.responseType("in_channel").text("I'm a bot to interact with Smart Contracts and listen to events"));        });
+
+
+        //   Store Number contract
+        //  change info to other command
         app.command("/info", (req, ctx) -> {
-            return ctx.ack(res -> res.responseType("in_channel").text("I'm a bot to interact with Smart Contracts and listen to events"));
+            String botRespondText;
+            String commandArgText = req.getPayload().getText();
+            int number;
+
+            try {
+                number = Integer.parseInt(commandArgText);
+
+            } catch (NumberFormatException e) {
+
+                botRespondText = "Could not handle: " + commandArgText + ". Please enter a correct number";
+                return ctx.ack(botRespondText);
+            }
+
+            try {
+                numberContract.storeNumber(BigInteger.valueOf(number)).send();
+            } catch (Exception e) {
+                e.printStackTrace();
+                return ctx.ack("Something went wrong");
+            }
+            botRespondText = "Your number has been stored into the Contract";
+
+            return ctx.ack(botRespondText); // respond with 200 OK
         });
+
+
+        app.command("/hello1", (req, ctx) -> {
+
+
+            EthFilter filter = new EthFilter(DefaultBlockParameterName.EARLIEST, DefaultBlockParameterName.LATEST, numberContract.getContractAddress().substring(2));
+
+
+            web3j.getWeb3j().ethLogFlowable(filter).subscribe(log -> System.out.println(log.toString()));
+
+
+//            numberContract.newNumberEventFlowable(DefaultBlockParameterName.EARLIEST, DefaultBlockParameterName.LATEST)
+//                    .subscribe(event -> {
+//                        final BigInteger number = event.number;
+//
+//                        System.out.println(number);
+//
+//
+//                        //Perform processing based on event values
+//                    });
+
+            return ctx.ack("Listener");
+        });
+
 
         app.command("/hello1", (req, ctx) -> {
             // Post a message via response_url
@@ -51,40 +103,35 @@ public class MyApp {
         });
 
 
-        app.command("/hello2", (req, ctx) -> {
-            // ctx.client() holds a valid bot token
-            ChatPostMessageResponse response = ctx.client().chatPostMessage(r -> r
-                    .channel(ctx.getChannelId())
-                    .text(":wave: How are you?")
-            );
-            return ctx.ack();
-        });
+        // Pattern sdk = Pattern.compile("check contract.*|listenToEvents", Pattern.CASE_INSENSITIVE);
+        Pattern sdk = Pattern.compile("deploy contract.*", Pattern.CASE_INSENSITIVE);
 
-
-        app.command("/hello3", (req, ctx) -> {
-            ChatPostMessageResponse response = ctx.say(":wave: How are you?");
-            return ctx.ack();
-        });
-
-
-
-
-        Pattern sdk = Pattern.compile("check contract.*|listenToEvents", Pattern.CASE_INSENSITIVE);
+        Pattern store = Pattern.compile("store number.*", Pattern.CASE_INSENSITIVE);
 
         String notificationChannelId = "C017K8W3PTP";
 // check if the message contains some monitoring keyword
         app.message(sdk, (payload, ctx) -> {
 
+            String address = "";
 
+            DeployContract d = new DeployContract();
+            try {
+                address = d.deploy();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            ChatPostMessageResponse response = ctx.say("Your contract has been deployed. The address on the ethereum blockchain is: \n" + address);
             MessageEvent event = payload.getEvent();
             String text = event.getText();
             System.out.println(text);
             MethodsClient client = ctx.client();
 
             // Add reacji to the message
+
             String channelId = event.getChannel();
             String ts = event.getTs();
-            ReactionsAddResponse reaction = client.reactionsAdd(r -> r.channel(channelId).timestamp(ts).name("hourglass_flowing_sand"));
+            ReactionsAddResponse reaction = client.reactionsAdd(r -> r.channel(channelId).timestamp(ts).name("white_check_mark"));
             if (!reaction.isOk()) {
                 ctx.logger.error("reactions.add failed: {}", reaction.getError());
             }
@@ -107,27 +154,9 @@ public class MyApp {
         });
 
 
-        app.event(ReactionAddedEvent.class, (payload, ctx) -> {
-            ReactionAddedEvent event = payload.getEvent();
-            if (event.getReaction().equals("white_check_mark")) {
-                ChatPostMessageResponse message = ctx.client().chatPostMessage(r -> r
-                        .channel(event.getItem().getChannel())
-                        .threadTs(event.getItem().getTs())
-                        .text("<@" + event.getUser() + "> Thank you! We greatly appreciate your efforts :two_hearts:"));
-                if (!message.isOk()) {
-                    ctx.logger.error("chat.postMessage failed: {}", message.getError());
-                }
-            }
-            return ctx.ack();
-        });
-
-
-
-
         var server = new SlackAppServer(app);
         server.start();
     }
-
 
 
 }
