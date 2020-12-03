@@ -28,11 +28,17 @@ import java.util.regex.Pattern;
 import java.io.IOException;
 
 public class MyApp {
+
+
+
+
     public static void main(String[] args) throws Exception {
         // App expects env variables (SLACK_BOT_TOKEN, SLACK_SIGNING_SECRET)
 
 
-        var app = new App();
+        App app = new App();
+
+
 
 
         //
@@ -45,7 +51,6 @@ public class MyApp {
 
 
         //   Store Number contract
-        //  change info to other command
         app.command("/storenumber", (req, ctx) -> {
             String botRespondText;
             String commandArgText = req.getPayload().getText();
@@ -75,93 +80,92 @@ public class MyApp {
         app.command("/listentoallevents", (req, ctx) -> {
 
 
-            EthFilter filter = new EthFilter(DefaultBlockParameterName.EARLIEST, DefaultBlockParameterName.LATEST, numberContract.getContractAddress().substring(2));
+            EthFilter filter = new EthFilter(DefaultBlockParameterName.LATEST, DefaultBlockParameterName.LATEST, numberContract.getContractAddress().substring(2));
 
 
             web3j.getWeb3j().ethLogFlowable(filter).subscribe(log -> botPostListenerMessage(log, ctx));
-
-
-
-
-//            numberContract.newNumberEventFlowable(DefaultBlockParameterName.EARLIEST, DefaultBlockParameterName.LATEST)
-//                    .subscribe(event -> {
-//                        final BigInteger number = event.number;
-//
-//                        System.out.println(number);
-//
-//
-//                        //Perform processing based on event values
-//                    });
 
             return ctx.ack("Added listener to contract");
         });
 
 
-        app.command("/hello1", (req, ctx) -> {
-            // Post a message via response_url
-            System.out.println("he");
-            WebhookResponse result = ctx.respond(res -> res
-                    .responseType("in_channel") // or "in_channel"
-                    .text("Hi there!") // blocks, attachments are also available
-            );
-            return ctx.ack(); // ack() here doesn't post a message
+
+        //listen to specific event
+        app.command("/test", (req, ctx) -> {
+
+
+            //payload is eventname
+            String eventname = req.getPayload().getText();
+
+            web3j.listenToEventX(eventname, ctx);
+            return ctx.ack("Added " + eventname + "listener to contract");
         });
 
 
-        // Pattern sdk = Pattern.compile("check contract.*|listenToEvents", Pattern.CASE_INSENSITIVE);
-        Pattern sdk = Pattern.compile("deploy contract.*", Pattern.CASE_INSENSITIVE);
 
-        Pattern store = Pattern.compile("store number.*", Pattern.CASE_INSENSITIVE);
 
-        String notificationChannelId = "C017K8W3PTP";
-// check if the message contains some monitoring keyword
-        app.message(sdk, (payload, ctx) -> {
 
-            String address = "";
 
-            DeployContract d = new DeployContract();
-            try {
-                address = d.deploy();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
 
-            ChatPostMessageResponse response = ctx.say("Your contract has been deployed. The address on the ethereum blockchain is: \n" + address);
-            MessageEvent event = payload.getEvent();
-            String text = event.getText();
-            System.out.println(text);
-            MethodsClient client = ctx.client();
 
-            // Add reacji to the message
 
-            String channelId = event.getChannel();
-            String ts = event.getTs();
-            ReactionsAddResponse reaction = client.reactionsAdd(r -> r.channel(channelId).timestamp(ts).name("white_check_mark"));
-            if (!reaction.isOk()) {
-                ctx.logger.error("reactions.add failed: {}", reaction.getError());
-            }
 
-            // Send the message to the SDK author
-            ChatGetPermalinkResponse permalink = client.chatGetPermalink(r -> r.channel(channelId).messageTs(ts));
-            if (permalink.isOk()) {
-                ChatPostMessageResponse message = client.chatPostMessage(r -> r
-                        .channel(notificationChannelId)
-                        .text("Testing reaction emoji" + permalink.getPermalink())
-                        .unfurlLinks(true));
-                if (!message.isOk()) {
-                    ctx.logger.error("chat.postMessage failed: {}", message.getError());
-                }
-            } else {
-                ctx.logger.error("chat.getPermalink failed: {}", permalink.getError());
-            }
-
-            return ctx.ack();
-        });
+//currently not in use
+//        // Pattern sdk = Pattern.compile("check contract.*|listenToEvents", Pattern.CASE_INSENSITIVE);
+//        Pattern sdk = Pattern.compile("deploy contract.*", Pattern.CASE_INSENSITIVE);
+//
+//        Pattern store = Pattern.compile("store number.*", Pattern.CASE_INSENSITIVE);
+//
+//        String notificationChannelId = "C017K8W3PTP";
+//// check if the message contains some monitoring keyword
+//        app.message(sdk, (payload, ctx) -> {
+//
+//            String address = "";
+//
+//            DeployContract d = new DeployContract();
+//            try {
+//                address = d.deploy();
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//
+//            ChatPostMessageResponse response = ctx.say("Your contract has been deployed. The address on the ethereum blockchain is: \n" + address);
+//            MessageEvent event = payload.getEvent();
+//            String text = event.getText();
+//            System.out.println(text);
+//            MethodsClient client = ctx.client();
+//
+//            // Add reacji to the message
+//
+//            String channelId = event.getChannel();
+//            String ts = event.getTs();
+//            ReactionsAddResponse reaction = client.reactionsAdd(r -> r.channel(channelId).timestamp(ts).name("white_check_mark"));
+//            if (!reaction.isOk()) {
+//                ctx.logger.error("reactions.add failed: {}", reaction.getError());
+//            }
+//
+//            // Send the message to the SDK author
+//            ChatGetPermalinkResponse permalink = client.chatGetPermalink(r -> r.channel(channelId).messageTs(ts));
+//            if (permalink.isOk()) {
+//                ChatPostMessageResponse message = client.chatPostMessage(r -> r
+//                        .channel(notificationChannelId)
+//                        .text("Testing reaction emoji" + permalink.getPermalink())
+//                        .unfurlLinks(true));
+//                if (!message.isOk()) {
+//                    ctx.logger.error("chat.postMessage failed: {}", message.getError());
+//                }
+//            } else {
+//                ctx.logger.error("chat.getPermalink failed: {}", permalink.getError());
+//            }
+//
+//            return ctx.ack();
+//        });
 
 
         var server = new SlackAppServer(app);
         server.start();
     }
+
 
     private static void botPostListenerMessage(Log log, SlashCommandContext ctx) throws IOException, SlackApiException {
 

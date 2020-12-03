@@ -1,11 +1,19 @@
 package Web3j;
 
+import com.slack.api.bolt.context.builtin.SlashCommandContext;
+import org.web3j.abi.EventValues;
 import org.web3j.crypto.Credentials;
 import org.web3j.model.NumberContract;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameterName;
+import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.protocol.http.HttpService;
+import org.web3j.tx.ChainId;
+import org.web3j.tx.RawTransactionManager;
+import org.web3j.tx.TransactionManager;
 import org.web3j.tx.gas.StaticGasProvider;
+import org.web3j.tx.response.PollingTransactionReceiptProcessor;
+
 import java.math.BigInteger;
 
 public class Web3jMain {
@@ -22,28 +30,39 @@ public class Web3jMain {
 
     public Web3jMain() throws Exception {
 
+
         //Provides a HttpService to local Ganache Blockchain and creates credentials from a private key from that blockchain
         web3j = Web3j.build(new HttpService("HTTP://127.0.0.1:7545"));
         creds = Credentials.create("44e746bdf08a465df59f94566643376d9f7a89128c6bac16562bb8da839b82a9");
+
 
         //A Gasprovider for later use with ethereum network (local)
         gasProvider = new StaticGasProvider(BigInteger.valueOf(1000), BigInteger.valueOf(1000000));
 
         loadContract();
 
+        //NumberContractTests tests = new NumberContractTests(numberContract);
+       // TransactionReceipt transactionReceipt = numberContract.storeNumber(BigInteger.valueOf(5)).send();
+
+    }
 
 
+    //eventname is currently always newNumberEvent
+    public void listenToEventX(String eventname, SlashCommandContext ctx)
+    {
+        numberContract.newNumberEventFlowable(DefaultBlockParameterName.LATEST, DefaultBlockParameterName.LATEST).subscribe(event -> {
 
-
-
-        NumberContractTests tests = new NumberContractTests(numberContract);
-
-
-
+            //Event emit notice
+            //return event.number?
+          ctx.say("" + event.number);
+        });
 
 
 
     }
+
+
+
 
     //if the contract isn't deployed you need to deploy the contract (e.g. via bot command DeployContract) and specify the address here
     // NumberContract.load( address...
