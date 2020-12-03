@@ -25,3 +25,14 @@
 //            ChatPostMessageResponse response = ctx.say(":wave: How are you?");
 //            return ctx.ack();
 //        });
+
+
+   app.command("/hello1", (req, ctx) -> {
+            // Post a message via response_url
+            System.out.println("he");
+            WebhookResponse result = ctx.respond(res -> res
+                    .responseType("in_channel") // or "in_channel"
+                    .text("Hi there!") // blocks, attachments are also available
+            );
+            return ctx.ack(); // ack() here doesn't post a message
+        });
