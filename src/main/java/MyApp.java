@@ -17,6 +17,9 @@ import com.slack.api.methods.response.reactions.ReactionsAddResponse;
 import com.slack.api.model.event.MessageEvent;
 
 
+import org.bouncycastle.jcajce.provider.digest.Keccak;
+import org.web3j.abi.EventEncoder;
+import org.web3j.abi.EventValues;
 import org.web3j.model.NumberContract;
 import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.methods.request.EthFilter;
@@ -169,7 +172,13 @@ public class MyApp {
 
     private static void botPostListenerMessage(Log log, SlashCommandContext ctx) throws IOException, SlackApiException {
 
-        System.out.println(log.toString());
+        System.out.println(log.getData() + " /n" +log.getTopics());
+        System.out.println(log);
+        System.out.println();
+
+
+
+
 
         //currently called whenever there is any event. Shall only be called when a number is stored in future
         //look at print for now
@@ -177,6 +186,9 @@ public class MyApp {
 
 
     }
+
+
+
 
 
 }
