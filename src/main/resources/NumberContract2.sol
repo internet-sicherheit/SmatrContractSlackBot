@@ -3,36 +3,35 @@ pragma solidity ^0.5.7;
 contract NumberContract2{
 
     uint256 number;
-    uint256 timesNumberRequested;
+    uint256 timesNumberStored;
 
-     event newNumber(uint256 number);
-    event calledRequestNumber();
-    event calledGetTimesFunctionCalled();
-
+    event newNumberStored(uint256 number);
+    event calledRequestNumberFunction();
 
 
-      constructor() public {
-        timesNumberRequested = 0;
+    constructor() public {
+        timesNumberStored = 0;
     }
-
 
 
     function storeNumber(uint256 num) public
     {
-        emit newNumber(num);
+
         number = num;
+        emit newNumberStored(num);
+        timesNumberStored++;
     }
 
-    function requestNumber() public  returns (uint256)
+    function requestNumber() public returns (uint256)
     {
-        emit calledRequestNumber();
+        emit calledRequestNumberFunction();
         return number;
     }
 
-    function getTimesFunctionCalled() public  returns (uint256)
+    function getTimesNumberStored() public view  returns (uint256)
     {
-        emit  calledGetTimesFunctionCalled();
-        return timesNumberRequested;
+
+        return timesNumberStored;
     }
 
 

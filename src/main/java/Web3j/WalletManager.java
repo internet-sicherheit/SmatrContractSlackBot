@@ -1,6 +1,7 @@
 package Web3j;
 
 import org.web3j.crypto.Credentials;
+import org.web3j.crypto.WalletFile;
 import org.web3j.crypto.WalletUtils;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameterName;
@@ -17,7 +18,7 @@ public class WalletManager {
 
 
 
-      var fileName =  WalletUtils.generateNewWalletFile("secret", new File("."));
+      String fileName =  WalletUtils.generateNewWalletFile("secret", new File("."));
 
 
 

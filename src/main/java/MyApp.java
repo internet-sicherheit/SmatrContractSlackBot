@@ -1,51 +1,38 @@
-
-
-import ContractDeployment.DeployContract;
 import Web3j.Web3jMain;
+import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.slack.api.bolt.App;
 
 import com.slack.api.bolt.context.builtin.SlashCommandContext;
 import com.slack.api.bolt.jetty.SlackAppServer;
 
 import com.slack.api.methods.SlackApiException;
-import com.slack.api.methods.response.chat.ChatPostMessageResponse;
-import com.slack.api.webhook.WebhookResponse;
-
-import com.slack.api.methods.MethodsClient;
-import com.slack.api.methods.response.chat.ChatGetPermalinkResponse;
-import com.slack.api.methods.response.reactions.ReactionsAddResponse;
-import com.slack.api.model.event.MessageEvent;
 
 
-import org.bouncycastle.jcajce.provider.digest.Keccak;
-import org.web3j.abi.EventEncoder;
-import org.web3j.abi.EventValues;
 import org.web3j.model.NumberContract;
-import org.web3j.protocol.core.DefaultBlockParameterName;
-import org.web3j.protocol.core.methods.request.EthFilter;
 import org.web3j.protocol.core.methods.response.Log;
 
 import java.math.BigInteger;
-import java.util.regex.Pattern;
 
 import java.io.IOException;
 
+
+
+
 public class MyApp {
 
-
+    //private static SampleHandler sampleHandler;
 
 
     public static void main(String[] args) throws Exception {
-        // App expects env variables (SLACK_BOT_TOKEN, SLACK_SIGNING_SECRET)
 
 
         App app = new App();
 
-
-
+      //  sampleHandler = new SampleHandler(app);
 
         //
-        Web3jMain web3j = new Web3jMain();
+         Web3jMain web3j = new Web3jMain();
 
         NumberContract numberContract = web3j.getNumberContract();
 
@@ -83,12 +70,15 @@ public class MyApp {
         app.command("/listentoallevents", (req, ctx) -> {
 
 
-            EthFilter filter = new EthFilter(DefaultBlockParameterName.LATEST, DefaultBlockParameterName.LATEST, numberContract.getContractAddress().substring(2));
 
+//            EthFilter filter = new EthFilter(DefaultBlockParameterName.LATEST, DefaultBlockParameterName.LATEST, numberContract.getContractAddress().substring(2));
+//
+//
+//            web3j.getWeb3j().ethLogFlowable(filter).subscribe(log -> botPostListenerMessage(log, ctx));
+//
+//            return ctx.ack("Added listener to contract");
 
-            web3j.getWeb3j().ethLogFlowable(filter).subscribe(log -> botPostListenerMessage(log, ctx));
-
-            return ctx.ack("Added listener to contract");
+            return ctx.ack();
         });
 
 
@@ -97,20 +87,13 @@ public class MyApp {
         app.command("/test", (req, ctx) -> {
 
 
+
             //payload is eventname
             String eventname = req.getPayload().getText();
 
             web3j.listenToEventX(eventname, ctx);
             return ctx.ack("Added " + eventname + "listener to contract");
         });
-
-
-
-
-
-
-
-
 
 
 //currently not in use
@@ -164,11 +147,10 @@ public class MyApp {
 //            return ctx.ack();
 //        });
 
-
-        var server = new SlackAppServer(app);
+        SlackAppServer server = new SlackAppServer(app);
         server.start();
-    }
 
+    }
 
     private static void botPostListenerMessage(Log log, SlashCommandContext ctx) throws IOException, SlackApiException {
 
@@ -176,19 +158,11 @@ public class MyApp {
         System.out.println(log);
         System.out.println();
 
-
-
-
-
         //currently called whenever there is any event. Shall only be called when a number is stored in future
         //look at print for now
         //ctx.say("addedNumber");
 
 
     }
-
-
-
-
 
 }

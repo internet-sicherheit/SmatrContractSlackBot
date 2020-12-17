@@ -23,14 +23,10 @@ import java.math.BigInteger;
 public class Web3jMain {
 
 
-    Web3j web3j;
-    Credentials creds;
-    StaticGasProvider gasProvider;
-
-
-
-    NumberContract numberContract;
-
+    private Web3j web3j;
+   private Credentials creds;
+   private StaticGasProvider gasProvider;
+ private NumberContract numberContract;
 
     public Web3jMain() throws Exception {
 
@@ -121,7 +117,8 @@ public class Web3jMain {
     }
 
 
-    }
+
+}
 
 
 
