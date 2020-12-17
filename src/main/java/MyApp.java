@@ -1,19 +1,11 @@
 import Web3j.Web3jMain;
-import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.slack.api.bolt.App;
-
 import com.slack.api.bolt.context.builtin.SlashCommandContext;
 import com.slack.api.bolt.jetty.SlackAppServer;
-
 import com.slack.api.methods.SlackApiException;
-
-
 import org.web3j.model.NumberContract;
 import org.web3j.protocol.core.methods.response.Log;
-
 import java.math.BigInteger;
-
 import java.io.IOException;
 
 
