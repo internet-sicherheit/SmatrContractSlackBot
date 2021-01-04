@@ -120,11 +120,7 @@ public class Web3jMain {
         return web3j;
     }
 
-    public void eventToTopicHash(String name) throws NoSuchAlgorithmException {
-
-        System.out.println(Hash.sha3String(name));
-
-    }
+    
 
     public boolean compareEventHashWithTopics(String eventHash) {
 
