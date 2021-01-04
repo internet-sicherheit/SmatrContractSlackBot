@@ -9,10 +9,10 @@ import org.web3j.model.old.NumberContract;
 import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.methods.request.EthFilter;
 import org.web3j.protocol.core.methods.response.Log;
+
 import java.math.BigInteger;
 import java.io.IOException;
-
-
+import java.util.ArrayList;
 
 
 public class MyApp {
@@ -27,13 +27,12 @@ public class MyApp {
     public static void main(String[] args) throws Exception {
 
 
-
         App app = new App();
 
-      //  sampleHandler = new SampleHandler(app);
+        //  sampleHandler = new SampleHandler(app);
 
         //
-         Web3jMain web3j = new Web3jMain();
+        Web3jMain web3j = new Web3jMain();
 
         NumberContract numberContract = web3j.getNumberContract();
 
@@ -98,12 +97,10 @@ public class MyApp {
         app.command("/listentoallevents", (req, ctx) -> {
 
 
-
             EthFilter filter = new EthFilter(DefaultBlockParameterName.LATEST, DefaultBlockParameterName.LATEST, numberContract.getContractAddress().substring(2));
 
 
             web3j.getWeb3j().ethLogFlowable(filter).subscribe(log -> botPostListenerMessage(log, req, ctx));
-
 
 
             return ctx.ack("Added listener to contract");
@@ -112,13 +109,13 @@ public class MyApp {
         });
 
 
-
         //listen to specific event
         app.command("/test", (req, ctx) -> {
 
-        web3j.
+            String address = web3j.getContractAddressFromSlack();
+            ArrayList<String> events = web3j.getAlleEvents();
 
-            return ctx.ack();
+            return ctx.ack("Currently stored contract address: " + address +"\n" + "currently stored eventnames " + events);
         });
 
 
@@ -184,7 +181,7 @@ public class MyApp {
         System.out.println(initL);
 
 
-        if(initL) {
+        if (initL) {
 
 
             WebhookResponse result = ctx.respond(res -> res
@@ -192,17 +189,14 @@ public class MyApp {
                     .text(log.toString()) // blocks, attachments are also available
             );
 
-        }else
-        {
+        } else {
             initL = true;
         }
 
 
-
-        System.out.println(log.getData() + " /n" +log.getTopics());
+        System.out.println(log.getData() + " /n" + log.getTopics());
         System.out.println(log);
         System.out.println();
-
 
 
         //currently called whenever there is any event. Shall only be called when a number is stored in future

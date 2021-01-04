@@ -1,4 +1,5 @@
 package Web3j;
+
 import org.bouncycastle.crypto.digests.KeccakDigest;
 import org.bouncycastle.jcajce.provider.digest.Keccak;
 import com.slack.api.bolt.context.builtin.SlashCommandContext;
@@ -24,22 +25,18 @@ public class Web3jMain {
 
 
     private Web3j web3j;
-   private Credentials creds;
-   private StaticGasProvider gasProvider;
- private NumberContract numberContract;
+    private Credentials creds;
+    private StaticGasProvider gasProvider;
+    private NumberContract numberContract;
 
- private ArrayList<String> alleEvents = new ArrayList<>();
+
+    private ArrayList<String> alleEvents = new ArrayList<>();
 
     private String contractAddressFromSlack;
 
     public Web3jMain() throws Exception {
 
-
-
-
         eventToTopicHash("newNumberStored(uint256)");
-
-
 
 
         //Provides a HttpService to local Ganache Blockchain and creates credentials from a private key from that blockchain
@@ -57,9 +54,8 @@ public class Web3jMain {
         loadContract(contractAddress);
 
 
-
         //NumberContractTests tests = new NumberContractTests(numberContract);
-       // TransactionReceipt transactionReceipt = numberContract.storeNumber(BigInteger.valueOf(5)).send();
+        // TransactionReceipt transactionReceipt = numberContract.storeNumber(BigInteger.valueOf(5)).send();
 
     }
 
@@ -69,13 +65,12 @@ public class Web3jMain {
     }
 
 
-    public void listenToEventX(String eventname, SlashCommandContext ctx)
-    {
+    public void listenToEventX(String eventname, SlashCommandContext ctx) {
         numberContract.newNumberEventFlowable(DefaultBlockParameterName.LATEST, DefaultBlockParameterName.LATEST).subscribe(event -> {
 
             //Event emit notice
             //return event.number?
-          ctx.say("" + event.number);
+            ctx.say("" + event.number);
         });
     }
 
@@ -105,11 +100,7 @@ public class Web3jMain {
 
     }
 
-
-
-
-    //if the contract isn't deployed you need to deploy the contract (e.g. via bot command DeployContract) and specify the address here
-    // NumberContract.load( address...
+    //loads a contract onto the server via contractAddress
     private String loadContract(String contractAddress) throws Exception {
 
 
@@ -135,28 +126,33 @@ public class Web3jMain {
         return web3j;
     }
 
-public void eventToTopicHash(String name) throws NoSuchAlgorithmException {
+    public void eventToTopicHash(String name) throws NoSuchAlgorithmException {
 
-    System.out.println(Hash.sha3String(name));
+        System.out.println(Hash.sha3String(name));
 
-}
+    }
 
-public boolean compareEventHashWithTopics(String eventHash)
-{
+    public boolean compareEventHashWithTopics(String eventHash) {
 
-    return true;
-}
+        return true;
+    }
 
 
-public void setContractAddressFromSlack(String address){
+    public String  eventNameToSha3Hash(String eventname)
+    {
+       return Hash.sha3String(eventname);
+    }
+
+
+    //setters
+    public void setContractAddressFromSlack(String address) {
 
         contractAddressFromSlack = address;
 
     }
 
 
-    public void addEvents(String[] events)
-    {
+    public void addEvents(String[] events) {
         for (int i = 0; i < events.length; i++) {
             alleEvents.add(events[i]);
         }
@@ -164,8 +160,14 @@ public void setContractAddressFromSlack(String address){
 
     }
 
+
+    //Getters
     public String getContractAddressFromSlack() {
         return contractAddressFromSlack;
+    }
+
+    public ArrayList<String> getAlleEvents() {
+        return alleEvents;
     }
 
 }
