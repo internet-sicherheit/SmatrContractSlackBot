@@ -1,4 +1,4 @@
-package org.web3j.model;
+package org.web3j.model.old;
 
 import io.reactivex.Flowable;
 import java.math.BigInteger;
