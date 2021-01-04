@@ -30,7 +30,7 @@ public class Web3jMain {
 
     public Web3jMain() throws Exception {
 
-        eventToTopicHash("newNumberStored(uint256)");
+
 
 
         //Provides a HttpService to local Ganache Blockchain and creates credentials from a private key from that blockchain
@@ -120,7 +120,7 @@ public class Web3jMain {
         return web3j;
     }
 
-    
+
 
     public boolean compareEventHashWithTopics(String eventHash) {
 

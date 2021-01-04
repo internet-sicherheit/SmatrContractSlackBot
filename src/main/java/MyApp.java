@@ -80,6 +80,9 @@ public class MyApp {
 
             web3j.addEventsAsString(req.getPayload().getText());
 
+
+
+
             return ctx.ack("Added eventnames");
 
         });

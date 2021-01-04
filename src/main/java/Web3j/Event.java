@@ -34,23 +34,41 @@ public class Event {
         return txt;
     }
 
-    public String toSha3HashString()
-    {
+    public String toSha3HashString() {
         String txt = name;
-        txt+= "(";
+        txt += "(";
         for (int i = 0; i < events.size(); i++) {
 
             txt += events.get(i);
 
-            if(!(i == events.size()-1))
-            {
-                txt+= ",";
+            if (!(i == events.size() - 1)) {
+                txt += ",";
             }
         }
 
-        txt+= ")";
+        txt += ")";
 
         return Hash.sha3String(txt);
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        boolean equal = false;
+
+        if (o instanceof Event) {
+            Event c = (Event) o;
+            if (c.toSha3HashString().equals(toSha3HashString())
+            ) {
+
+                equal = true;
+
+            }
+
+
+        }
+
+        return equal;
     }
 
 }
