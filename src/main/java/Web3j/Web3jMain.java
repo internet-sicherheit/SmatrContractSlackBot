@@ -1,24 +1,23 @@
 package Web3j;
-
+import org.bouncycastle.crypto.digests.KeccakDigest;
+import org.bouncycastle.jcajce.provider.digest.Keccak;
 import com.slack.api.bolt.context.builtin.SlashCommandContext;
-import org.web3j.abi.EventValues;
+import jnr.ffi.Address;
+import org.bouncycastle.jcajce.provider.digest.SHA3;
+import org.bouncycastle.util.encoders.Hex;
 import org.web3j.crypto.Credentials;
-import org.web3j.model.NumberContract;
+import org.web3j.model.old.NumberContract;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameter;
 import org.web3j.protocol.core.DefaultBlockParameterName;
-import org.web3j.protocol.core.methods.request.EthFilter;
-import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.protocol.http.HttpService;
-import org.web3j.tx.ChainId;
-import org.web3j.tx.RawTransactionManager;
-import org.web3j.tx.TransactionManager;
 import org.web3j.tx.gas.StaticGasProvider;
-import org.web3j.tx.response.PollingTransactionReceiptProcessor;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 public class Web3jMain {
 
@@ -28,7 +27,14 @@ public class Web3jMain {
    private StaticGasProvider gasProvider;
  private NumberContract numberContract;
 
+ private String[] alleEvents;
+
     public Web3jMain() throws Exception {
+
+
+
+
+        eventToTopicHash("newNumberStored(uint256)");
 
 
 
@@ -41,13 +47,23 @@ public class Web3jMain {
         //A Gasprovider for later use with ethereum network (local)
         gasProvider = new StaticGasProvider(BigInteger.valueOf(1000), BigInteger.valueOf(1000000));
 
-        loadContract();
+
+        String contractAddress = "0x1D6947DC1e4e1c4c9B47EB090Aaa07a978A730dE";
+
+
+        loadContract(contractAddress);
+
+
 
         //NumberContractTests tests = new NumberContractTests(numberContract);
        // TransactionReceipt transactionReceipt = numberContract.storeNumber(BigInteger.valueOf(5)).send();
 
     }
 
+    private void setEventNames() {
+
+
+    }
 
 
     public void listenToEventX(String eventname, SlashCommandContext ctx)
@@ -91,12 +107,12 @@ public class Web3jMain {
 
     //if the contract isn't deployed you need to deploy the contract (e.g. via bot command DeployContract) and specify the address here
     // NumberContract.load( address...
-    private String loadContract() throws Exception {
+    private String loadContract(String contractAddress) throws Exception {
 
 
-        if ((NumberContract.load("0xd0189c47d6fd02f8b6735a22d6f7f678bebdc029", web3j, creds, gasProvider) != null)) {
-            System.out.println("hello");
-            numberContract = NumberContract.load("0xd0189c47d6fd02f8b6735a22d6f7f678bebdc029", web3j, creds, gasProvider);
+        if ((NumberContract.load(contractAddress, web3j, creds, gasProvider) != null)) {
+            System.out.println("Loaded Contract");
+            numberContract = NumberContract.load(contractAddress, web3j, creds, gasProvider);
             return "Contract loaded successfully";
         } else {
             System.out.println("Please deploy the contract first or check your given address");
@@ -116,7 +132,21 @@ public class Web3jMain {
         return web3j;
     }
 
+public void eventToTopicHash(String name) throws NoSuchAlgorithmException {
 
+    System.out.println(Hash.sha3String(name));
+
+}
+
+public boolean compareEventHashWithTopics(String eventHash)
+{
+
+
+  
+
+
+    return true;
+}
 
 }
 
