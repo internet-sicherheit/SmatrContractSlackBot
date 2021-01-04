@@ -1,11 +1,6 @@
 package Web3j;
 
-import org.bouncycastle.crypto.digests.KeccakDigest;
-import org.bouncycastle.jcajce.provider.digest.Keccak;
 import com.slack.api.bolt.context.builtin.SlashCommandContext;
-import jnr.ffi.Address;
-import org.bouncycastle.jcajce.provider.digest.SHA3;
-import org.bouncycastle.util.encoders.Hex;
 import org.web3j.crypto.Credentials;
 import org.web3j.model.old.NumberContract;
 import org.web3j.protocol.Web3j;
@@ -17,7 +12,6 @@ import org.web3j.tx.gas.StaticGasProvider;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigInteger;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 
@@ -30,7 +24,7 @@ public class Web3jMain {
     private NumberContract numberContract;
 
 
-    private ArrayList<String> alleEvents = new ArrayList<>();
+    private ArrayList<Event> allEvents = new ArrayList<>();
 
     private String contractAddressFromSlack;
 
@@ -152,10 +146,31 @@ public class Web3jMain {
     }
 
 
-    public void addEvents(String[] events) {
-        for (int i = 0; i < events.length; i++) {
-            alleEvents.add(events[i]);
+
+    /*Takes the complete string with all events(and parameters), every event is seperated by a comma and every parameters(of an event) is seperated by a space
+    First Seperates all events and stores them into an array. The code goes through the events and seperates and seperates them into a string array [Eventname,param1,param2,...]
+    The first Stringvalue is the Eventname and gets stored seperatly while all the parameters gets stored into an arraylist. With Eventname and the paramaters a new Event is stored.
+
+     */
+    public void addEventsAsString(String eventsString) {
+
+        String[] allEventStrings = eventsString.trim().split(",");
+
+        for (int i = 0; i < allEventStrings.length; i++) {
+
+            String[] singleEventString = allEventStrings[i].trim().split("\\s+");
+
+            
+            String eventName = singleEventString[0];
+            ArrayList<String> eventParameters = new ArrayList<>();
+
+            for (int j = 1; j < singleEventString.length; j++) {
+                eventParameters.add(singleEventString[j]);
+            }
+            allEvents.add(new Event(eventName, eventParameters));
         }
+
+
 
 
     }
@@ -166,8 +181,8 @@ public class Web3jMain {
         return contractAddressFromSlack;
     }
 
-    public ArrayList<String> getAlleEvents() {
-        return alleEvents;
+    public ArrayList<Event> getAlleEvents() {
+        return allEvents;
     }
 
 }

@@ -1,3 +1,4 @@
+import Web3j.Event;
 import Web3j.Web3jMain;
 import com.slack.api.bolt.App;
 import com.slack.api.bolt.context.builtin.SlashCommandContext;
@@ -74,11 +75,10 @@ public class MyApp {
             User has to give all event names of the contract seperated by spaces
         */
 
-        app.command("/seteventnames", (req, ctx) -> {
+        app.command("/setevents", (req, ctx) -> {
 
-            String eventnames = req.getPayload().getText();
 
-            web3j.addEvents(eventnames.trim().split("\\s+"));
+            web3j.addEventsAsString(req.getPayload().getText());
 
             return ctx.ack("Added eventnames");
 
@@ -113,9 +113,9 @@ public class MyApp {
         app.command("/test", (req, ctx) -> {
 
             String address = web3j.getContractAddressFromSlack();
-            ArrayList<String> events = web3j.getAlleEvents();
+            ArrayList<Event> events = web3j.getAlleEvents();
 
-            return ctx.ack("Currently stored contract address: " + address +"\n" + "currently stored eventnames " + events);
+            return ctx.ack("Currently stored contract address: " + address +"\n" + "currently stored events " + events);
         });
 
 
