@@ -1,6 +1,6 @@
 package Web3j;
 
-import org.web3j.model.NumberContract;
+import org.web3j.model.old.NumberContract;
 
 import java.math.BigInteger;
 

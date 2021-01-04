@@ -36,18 +36,14 @@ import org.web3j.tx.gas.ContractGasProvider;
  */
 @SuppressWarnings("rawtypes")
 public class NumberContract extends Contract {
-    public static final String BINARY = "608060405234801561001057600080fd5b50610104806100206000396000f3fe6080604052348015600f57600080fd5b506004361060325760003560e01c8063b6339418146037578063cfd1a7e2146053575b600080fd5b605160048036036020811015604b57600080fd5b5035606b565b005b605960a6565b60408051918252519081900360200190f35b60008190556040805182815290517fa7f1c945da9b165cf9d2d173e7bf823eb59569ecffef3d150fe6c74b6e78933f9181900360200190a150565b6040516000907f48cadc1eb88f0fcf074f538504e7613ce7c3eda3fa3b0768e21d21b5525de171908290a1506000549056fea165627a7a7230582096f8d7a98fd967d7b773d287ada884996e51bb4e677e9965674130adfecbaf5f0029";
+    public static final String BINARY = "608060405234801561001057600080fd5b50600060015560d5806100246000396000f3fe6080604052348015600f57600080fd5b506004361060325760003560e01c8063b6339418146037578063f65fa899146053575b600080fd5b605160048036036020811015604b57600080fd5b5035606b565b005b605960a3565b60408051918252519081900360200190f35b6040805182815290517f3780149a2e969cb1dde078709d0f96a56086a2a76b46fa5082741167d3262a859181900360200190a1600055565b6000549056fea165627a7a7230582047c7555160d9463e43ca5722370a4fb29b40a0a15edd3cc384658739058aacd80029";
 
     public static final String FUNC_STORENUMBER = "storeNumber";
 
-    public static final String FUNC_REQUESTNUMBER = "requestNumber";
+    public static final String FUNC_GIVESTOREDNUMBER = "giveStoredNumber";
 
-    public static final Event NEWNUMBERSTORED_EVENT = new Event("newNumberStored", 
+    public static final Event NEWNUMBER_EVENT = new Event("newNumber", 
             Arrays.<TypeReference<?>>asList(new TypeReference<Uint256>() {}));
-    ;
-
-    public static final Event CALLEDREQUESTNUMBERFUNCTION_EVENT = new Event("calledRequestNumberFunction", 
-            Arrays.<TypeReference<?>>asList());
     ;
 
     @Deprecated
@@ -76,19 +72,18 @@ public class NumberContract extends Contract {
         return executeRemoteCallTransaction(function);
     }
 
-    public RemoteFunctionCall<TransactionReceipt> requestNumber() {
-        final Function function = new Function(
-                FUNC_REQUESTNUMBER, 
+    public RemoteFunctionCall<BigInteger> giveStoredNumber() {
+        final Function function = new Function(FUNC_GIVESTOREDNUMBER, 
                 Arrays.<Type>asList(), 
-                Collections.<TypeReference<?>>emptyList());
-        return executeRemoteCallTransaction(function);
+                Arrays.<TypeReference<?>>asList(new TypeReference<Uint256>() {}));
+        return executeRemoteCallSingleValueReturn(function, BigInteger.class);
     }
 
-    public List<NewNumberStoredEventResponse> getNewNumberStoredEvents(TransactionReceipt transactionReceipt) {
-        List<Contract.EventValuesWithLog> valueList = extractEventParametersWithLog(NEWNUMBERSTORED_EVENT, transactionReceipt);
-        ArrayList<NewNumberStoredEventResponse> responses = new ArrayList<NewNumberStoredEventResponse>(valueList.size());
+    public List<NewNumberEventResponse> getNewNumberEvents(TransactionReceipt transactionReceipt) {
+        List<Contract.EventValuesWithLog> valueList = extractEventParametersWithLog(NEWNUMBER_EVENT, transactionReceipt);
+        ArrayList<NewNumberEventResponse> responses = new ArrayList<NewNumberEventResponse>(valueList.size());
         for (Contract.EventValuesWithLog eventValues : valueList) {
-            NewNumberStoredEventResponse typedResponse = new NewNumberStoredEventResponse();
+            NewNumberEventResponse typedResponse = new NewNumberEventResponse();
             typedResponse.log = eventValues.getLog();
             typedResponse.number = (BigInteger) eventValues.getNonIndexedValues().get(0).getValue();
             responses.add(typedResponse);
@@ -96,12 +91,12 @@ public class NumberContract extends Contract {
         return responses;
     }
 
-    public Flowable<NewNumberStoredEventResponse> newNumberStoredEventFlowable(EthFilter filter) {
-        return web3j.ethLogFlowable(filter).map(new io.reactivex.functions.Function<Log, NewNumberStoredEventResponse>() {
+    public Flowable<NewNumberEventResponse> newNumberEventFlowable(EthFilter filter) {
+        return web3j.ethLogFlowable(filter).map(new io.reactivex.functions.Function<Log, NewNumberEventResponse>() {
             @Override
-            public NewNumberStoredEventResponse apply(Log log) {
-                Contract.EventValuesWithLog eventValues = extractEventParametersWithLog(NEWNUMBERSTORED_EVENT, log);
-                NewNumberStoredEventResponse typedResponse = new NewNumberStoredEventResponse();
+            public NewNumberEventResponse apply(Log log) {
+                Contract.EventValuesWithLog eventValues = extractEventParametersWithLog(NEWNUMBER_EVENT, log);
+                NewNumberEventResponse typedResponse = new NewNumberEventResponse();
                 typedResponse.log = log;
                 typedResponse.number = (BigInteger) eventValues.getNonIndexedValues().get(0).getValue();
                 return typedResponse;
@@ -109,39 +104,10 @@ public class NumberContract extends Contract {
         });
     }
 
-    public Flowable<NewNumberStoredEventResponse> newNumberStoredEventFlowable(DefaultBlockParameter startBlock, DefaultBlockParameter endBlock) {
+    public Flowable<NewNumberEventResponse> newNumberEventFlowable(DefaultBlockParameter startBlock, DefaultBlockParameter endBlock) {
         EthFilter filter = new EthFilter(startBlock, endBlock, getContractAddress());
-        filter.addSingleTopic(EventEncoder.encode(NEWNUMBERSTORED_EVENT));
-        return newNumberStoredEventFlowable(filter);
-    }
-
-    public List<CalledRequestNumberFunctionEventResponse> getCalledRequestNumberFunctionEvents(TransactionReceipt transactionReceipt) {
-        List<Contract.EventValuesWithLog> valueList = extractEventParametersWithLog(CALLEDREQUESTNUMBERFUNCTION_EVENT, transactionReceipt);
-        ArrayList<CalledRequestNumberFunctionEventResponse> responses = new ArrayList<CalledRequestNumberFunctionEventResponse>(valueList.size());
-        for (Contract.EventValuesWithLog eventValues : valueList) {
-            CalledRequestNumberFunctionEventResponse typedResponse = new CalledRequestNumberFunctionEventResponse();
-            typedResponse.log = eventValues.getLog();
-            responses.add(typedResponse);
-        }
-        return responses;
-    }
-
-    public Flowable<CalledRequestNumberFunctionEventResponse> calledRequestNumberFunctionEventFlowable(EthFilter filter) {
-        return web3j.ethLogFlowable(filter).map(new io.reactivex.functions.Function<Log, CalledRequestNumberFunctionEventResponse>() {
-            @Override
-            public CalledRequestNumberFunctionEventResponse apply(Log log) {
-                Contract.EventValuesWithLog eventValues = extractEventParametersWithLog(CALLEDREQUESTNUMBERFUNCTION_EVENT, log);
-                CalledRequestNumberFunctionEventResponse typedResponse = new CalledRequestNumberFunctionEventResponse();
-                typedResponse.log = log;
-                return typedResponse;
-            }
-        });
-    }
-
-    public Flowable<CalledRequestNumberFunctionEventResponse> calledRequestNumberFunctionEventFlowable(DefaultBlockParameter startBlock, DefaultBlockParameter endBlock) {
-        EthFilter filter = new EthFilter(startBlock, endBlock, getContractAddress());
-        filter.addSingleTopic(EventEncoder.encode(CALLEDREQUESTNUMBERFUNCTION_EVENT));
-        return calledRequestNumberFunctionEventFlowable(filter);
+        filter.addSingleTopic(EventEncoder.encode(NEWNUMBER_EVENT));
+        return newNumberEventFlowable(filter);
     }
 
     @Deprecated
@@ -166,13 +132,13 @@ public class NumberContract extends Contract {
         return deployRemoteCall(NumberContract.class, web3j, credentials, contractGasProvider, BINARY, "");
     }
 
+    public static RemoteCall<NumberContract> deploy(Web3j web3j, TransactionManager transactionManager, ContractGasProvider contractGasProvider) {
+        return deployRemoteCall(NumberContract.class, web3j, transactionManager, contractGasProvider, BINARY, "");
+    }
+
     @Deprecated
     public static RemoteCall<NumberContract> deploy(Web3j web3j, Credentials credentials, BigInteger gasPrice, BigInteger gasLimit) {
         return deployRemoteCall(NumberContract.class, web3j, credentials, gasPrice, gasLimit, BINARY, "");
-    }
-
-    public static RemoteCall<NumberContract> deploy(Web3j web3j, TransactionManager transactionManager, ContractGasProvider contractGasProvider) {
-        return deployRemoteCall(NumberContract.class, web3j, transactionManager, contractGasProvider, BINARY, "");
     }
 
     @Deprecated
@@ -180,10 +146,7 @@ public class NumberContract extends Contract {
         return deployRemoteCall(NumberContract.class, web3j, transactionManager, gasPrice, gasLimit, BINARY, "");
     }
 
-    public static class NewNumberStoredEventResponse extends BaseEventResponse {
+    public static class NewNumberEventResponse extends BaseEventResponse {
         public BigInteger number;
-    }
-
-    public static class CalledRequestNumberFunctionEventResponse extends BaseEventResponse {
     }
 }

@@ -2,8 +2,12 @@ import Web3j.Web3jMain;
 import com.slack.api.bolt.App;
 import com.slack.api.bolt.context.builtin.SlashCommandContext;
 import com.slack.api.bolt.jetty.SlackAppServer;
+import com.slack.api.bolt.request.builtin.SlashCommandRequest;
 import com.slack.api.methods.SlackApiException;
-import org.web3j.model.NumberContract;
+import com.slack.api.webhook.WebhookResponse;
+import org.web3j.model.old.NumberContract;
+import org.web3j.protocol.core.DefaultBlockParameterName;
+import org.web3j.protocol.core.methods.request.EthFilter;
 import org.web3j.protocol.core.methods.response.Log;
 import java.math.BigInteger;
 import java.io.IOException;
@@ -13,10 +17,15 @@ import java.io.IOException;
 
 public class MyApp {
 
+
+    private static boolean initL;
+
+
     //private static SampleHandler sampleHandler;
 
 
     public static void main(String[] args) throws Exception {
+
 
 
         App app = new App();
@@ -55,6 +64,8 @@ public class MyApp {
             }
             botRespondText = "Your number has been stored into the Contract";
 
+            ctx.say("hed");
+
             return ctx.ack(botRespondText); // respond with 200 OK
         });
 
@@ -63,14 +74,16 @@ public class MyApp {
 
 
 
-//            EthFilter filter = new EthFilter(DefaultBlockParameterName.LATEST, DefaultBlockParameterName.LATEST, numberContract.getContractAddress().substring(2));
-//
-//
-//            web3j.getWeb3j().ethLogFlowable(filter).subscribe(log -> botPostListenerMessage(log, ctx));
-//
-//            return ctx.ack("Added listener to contract");
+            EthFilter filter = new EthFilter(DefaultBlockParameterName.LATEST, DefaultBlockParameterName.LATEST, numberContract.getContractAddress().substring(2));
 
-            return ctx.ack();
+
+            web3j.getWeb3j().ethLogFlowable(filter).subscribe(log -> botPostListenerMessage(log, req, ctx));
+
+
+
+            return ctx.ack("Added listener to contract");
+
+
         });
 
 
@@ -144,11 +157,32 @@ public class MyApp {
 
     }
 
-    private static void botPostListenerMessage(Log log, SlashCommandContext ctx) throws IOException, SlackApiException {
+    private static void botPostListenerMessage(Log log, SlashCommandRequest req, SlashCommandContext ctx) throws IOException, SlackApiException {
+
+
+        System.out.println(initL);
+
+
+        if(initL) {
+
+
+            WebhookResponse result = ctx.respond(res -> res
+                    .responseType("ephemeral") // or "in_channnel"
+                    .text(log.toString()) // blocks, attachments are also available
+            );
+
+        }else
+        {
+            initL = true;
+        }
+
+
 
         System.out.println(log.getData() + " /n" +log.getTopics());
         System.out.println(log);
         System.out.println();
+
+
 
         //currently called whenever there is any event. Shall only be called when a number is stored in future
         //look at print for now

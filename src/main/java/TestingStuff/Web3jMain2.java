@@ -1,7 +1,7 @@
 package TestingStuff;
 
 import org.web3j.crypto.Credentials;
-import org.web3j.model.NumberContract2;
+import org.web3j.model.old.NumberContract2;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.methods.request.EthFilter;
