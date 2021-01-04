@@ -70,6 +70,31 @@ public class MyApp {
         });
 
 
+
+        /*sets the eventnames for the contract
+            User has to give all event names of the contract seperated by spaces
+        */
+
+        app.command("/seteventnames", (req, ctx) -> {
+
+            String eventnames = req.getPayload().getText();
+
+            web3j.addEvents(eventnames.trim().split("\\s+"));
+
+            return ctx.ack("Added eventnames");
+
+        });
+
+
+        app.command("/storecontractaddress", (req, ctx) -> {
+
+            web3j.setContractAddressFromSlack(req.getPayload().getText());
+
+            return ctx.ack("stored contract address");
+
+
+        });
+
         app.command("/listentoallevents", (req, ctx) -> {
 
 
@@ -91,13 +116,9 @@ public class MyApp {
         //listen to specific event
         app.command("/test", (req, ctx) -> {
 
+        web3j.
 
-
-            //payload is eventname
-            String eventname = req.getPayload().getText();
-
-            web3j.listenToEventX(eventname, ctx);
-            return ctx.ack("Added " + eventname + "listener to contract");
+            return ctx.ack();
         });
 
 

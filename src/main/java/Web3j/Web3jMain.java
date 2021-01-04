@@ -18,6 +18,7 @@ import java.lang.reflect.Method;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 
 public class Web3jMain {
 
@@ -27,7 +28,9 @@ public class Web3jMain {
    private StaticGasProvider gasProvider;
  private NumberContract numberContract;
 
- private String[] alleEvents;
+ private ArrayList<String> alleEvents = new ArrayList<>();
+
+    private String contractAddressFromSlack;
 
     public Web3jMain() throws Exception {
 
@@ -141,12 +144,29 @@ public void eventToTopicHash(String name) throws NoSuchAlgorithmException {
 public boolean compareEventHashWithTopics(String eventHash)
 {
 
-
-  
-
-
     return true;
 }
+
+
+public void setContractAddressFromSlack(String address){
+
+        contractAddressFromSlack = address;
+
+    }
+
+
+    public void addEvents(String[] events)
+    {
+        for (int i = 0; i < events.length; i++) {
+            alleEvents.add(events[i]);
+        }
+
+
+    }
+
+    public String getContractAddressFromSlack() {
+        return contractAddressFromSlack;
+    }
 
 }
 
