@@ -8,8 +8,6 @@ import java.util.ArrayList;
 public class StoredContract {
 
 
-
-
     private String contractAddress;
     private ArrayList<Event> events;
 

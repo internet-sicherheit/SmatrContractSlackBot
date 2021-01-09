@@ -9,6 +9,7 @@ import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.http.HttpService;
 import org.web3j.tx.gas.StaticGasProvider;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigInteger;
@@ -24,13 +25,10 @@ public class Web3jMain {
     private NumberContract numberContract;
 
 
-    private ArrayList<Event> allEvents = new ArrayList<>();
+    ContractManager contractManager;
 
-    private String contractAddressFromSlack;
 
     public Web3jMain() throws Exception {
-
-
 
 
         //Provides a HttpService to local Ganache Blockchain and creates credentials from a private key from that blockchain
@@ -41,11 +39,7 @@ public class Web3jMain {
         //A Gasprovider for later use with ethereum network (local)
         gasProvider = new StaticGasProvider(BigInteger.valueOf(1000), BigInteger.valueOf(1000000));
 
-
-        String contractAddress = "0x1D6947DC1e4e1c4c9B47EB090Aaa07a978A730dE";
-
-
-        loadContract(contractAddress);
+        contractManager = new ContractManager();
 
 
         //NumberContractTests tests = new NumberContractTests(numberContract);
@@ -121,26 +115,28 @@ public class Web3jMain {
     }
 
 
-
     public boolean compareEventHashWithTopics(String eventHash) {
 
         return true;
     }
 
 
-    public String  eventNameToSha3Hash(String eventname)
-    {
-       return Hash.sha3String(eventname);
+    public String eventNameToSha3Hash(String eventname) {
+        return Hash.sha3String(eventname);
     }
 
 
-    //setters
-    public void setContractAddressFromSlack(String address) {
+    public void storeNewContractFromSlack(String contractInformation) {
 
-        contractAddressFromSlack = address;
+        String parts[] = contractInformation.split(" ", 2);
+
+        String contractAddress = parts[0];
+
+        ArrayList<Event> events = eventsToArrayList(parts[1]);
+
+        contractManager.storeContract(new StoredContract(contractAddress, events));
 
     }
-
 
 
     /*Takes the complete string with all events(and parameters), every event is seperated by a comma and every parameters(of an event) is seperated by a space
@@ -148,38 +144,43 @@ public class Web3jMain {
     The first Stringvalue is the Eventname and gets stored seperatly while all the parameters gets stored into an arraylist. With Eventname and the paramaters a new Event is stored.
 
      */
-    public void addEventsAsString(String eventsString) {
 
+
+    public ArrayList<Event> eventsToArrayList(String eventsString) {
+
+
+        ArrayList<Event> events = new ArrayList<>();
+
+        //Creates Array with all Events
         String[] allEventStrings = eventsString.trim().split(",");
 
         for (int i = 0; i < allEventStrings.length; i++) {
 
+            //Creates Array that contains every parameter of the current event
             String[] singleEventString = allEventStrings[i].trim().split("\\s+");
 
-            
+
             String eventName = singleEventString[0];
             ArrayList<String> eventParameters = new ArrayList<>();
 
             for (int j = 1; j < singleEventString.length; j++) {
                 eventParameters.add(singleEventString[j]);
             }
-            allEvents.add(new Event(eventName, eventParameters));
+            events.add(new Event(eventName, eventParameters));
         }
 
 
-
-
+        return events;
     }
 
 
-    //Getters
-    public String getContractAddressFromSlack() {
-        return contractAddressFromSlack;
+
+    public ContractManager getContractManager()
+    {
+        return contractManager;
     }
 
-    public ArrayList<Event> getAlleEvents() {
-        return allEvents;
-    }
+
 
 }
 

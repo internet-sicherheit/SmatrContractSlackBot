@@ -4,11 +4,15 @@ import java.util.ArrayList;
 
 public class ContractManager {
 
+
+
     ArrayList<StoredContract> storedContracts = new ArrayList<>();
 
     public void storeContract(StoredContract contract) {
 
         storedContracts.add(contract);
+
+        System.out.println(contract.toString());
 
     }
 
@@ -50,6 +54,11 @@ public class ContractManager {
 
         return a;
     }
+
+    public ArrayList<StoredContract> getStoredContracts() {
+        return storedContracts;
+    }
+
 
 
 }

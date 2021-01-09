@@ -13,14 +13,6 @@ public class Event {
     }
 
 
-    public String getName() {
-        return name;
-    }
-
-    public ArrayList<String> getEvents() {
-        return events;
-    }
-
 
     @Override
     public String toString() {
@@ -70,5 +62,16 @@ public class Event {
 
         return equal;
     }
+
+
+    public String getName() {
+        return name;
+    }
+
+    public ArrayList<String> getEvents() {
+        return events;
+    }
+
+
 
 }
