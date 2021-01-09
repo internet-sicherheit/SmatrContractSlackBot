@@ -12,7 +12,7 @@ public class ContractManager {
 
         storedContracts.add(contract);
 
-        System.out.println(contract.toString());
+        System.out.println(contract.getContractAddress());
 
     }
 

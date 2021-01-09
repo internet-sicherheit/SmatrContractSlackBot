@@ -1,4 +1,5 @@
 import Web3j.Event;
+import Web3j.StoredContract;
 import Web3j.Web3jMain;
 import com.slack.api.bolt.App;
 import com.slack.api.bolt.context.builtin.SlashCommandContext;
@@ -75,20 +76,10 @@ public class MyApp {
             User has to give all event names of the contract seperated by spaces
         */
 
-        app.command("/setevents", (req, ctx) -> {
 
+        app.command("/storecontract", (req, ctx) -> {
 
-            web3j.addEventsAsString(req.getPayload().getText());
-
-
-            return ctx.ack("Added eventnames");
-
-        });
-
-
-        app.command("/storecontractaddress", (req, ctx) -> {
-
-            web3j.setContractAddressFromSlack(req.getPayload().getText());
+            web3j.storeNewContractFromSlack(req.getPayload().getText());
 
             return ctx.ack("stored contract address");
 
@@ -111,23 +102,23 @@ public class MyApp {
 
 
         //listen to specific event
-        app.command("/test", (req, ctx) -> {
+        app.command("/info", (req, ctx) -> {
 
-            String address = web3j.getContractAddressFromSlack();
-            ArrayList<Event> events = web3j.getAlleEvents();
+            ArrayList<StoredContract> contracts = web3j.getContractManager().getStoredContracts();
+            String contractsString = "";
+            for (int i = 0; i < contracts.size(); i++) {
+                StoredContract currentContract = contracts.get(i);
+                contractsString += currentContract.getContractAddress() + "\n Events: ";
+
+                for (int j = 0; j < currentContract.getEvents().size(); j++) {
+
+                    contractsString += currentContract.getEvents().get(j).getName() + "\n";
+                }
+            }
 
 
-            //test
-            ArrayList<String> a = new ArrayList<>();
-            a.add("uint256");
-            Event e = new Event("newNumberStored", a);
 
-            System.out.println(events.get(0).equals(e));
-
-
-
-
-            return ctx.ack("Currently stored contract address: " + address + "\n" + "currently stored events " + events);
+            return ctx.ack(contractsString);
         });
 
 
