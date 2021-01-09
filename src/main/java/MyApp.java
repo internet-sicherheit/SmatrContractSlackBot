@@ -81,8 +81,6 @@ public class MyApp {
             web3j.addEventsAsString(req.getPayload().getText());
 
 
-
-
             return ctx.ack("Added eventnames");
 
         });
@@ -118,7 +116,18 @@ public class MyApp {
             String address = web3j.getContractAddressFromSlack();
             ArrayList<Event> events = web3j.getAlleEvents();
 
-            return ctx.ack("Currently stored contract address: " + address +"\n" + "currently stored events " + events);
+
+            //test
+            ArrayList<String> a = new ArrayList<>();
+            a.add("uint256");
+            Event e = new Event("newNumberStored", a);
+
+            System.out.println(events.get(0).equals(e));
+
+
+
+
+            return ctx.ack("Currently stored contract address: " + address + "\n" + "currently stored events " + events);
         });
 
 
