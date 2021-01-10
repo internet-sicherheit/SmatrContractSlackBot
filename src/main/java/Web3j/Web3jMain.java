@@ -125,10 +125,14 @@ public class Web3jMain {
         return Hash.sha3String(eventname);
     }
 
+/*This function needs a string in this way:
+    ContractAddress,Event1 param1 param2 ..., Event2 param1 param2, ...
+
+*/
 
     public void storeNewContractFromSlack(String contractInformation) {
 
-        String parts[] = contractInformation.split(" ", 2);
+        String parts[] = contractInformation.split(",", 2);
 
         String contractAddress = parts[0];
 
@@ -136,6 +140,12 @@ public class Web3jMain {
 
         contractManager.storeContract(new StoredContract(contractAddress, events));
 
+
+    }
+
+    public String switchActiveContract(String contractAddress)
+    {
+        return contractManager.switchCurrentlyLoadedContract(contractAddress);
     }
 
 
@@ -174,12 +184,10 @@ public class Web3jMain {
     }
 
 
-
-    public ContractManager getContractManager()
-    {
+    //getters
+    public ContractManager getContractManager() {
         return contractManager;
     }
-
 
 
 }
