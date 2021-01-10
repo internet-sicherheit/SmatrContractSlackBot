@@ -7,9 +7,14 @@ public class Event {
     private String name;
     private ArrayList<String> events;
 
+
+
+    private String sha3String;
+
     public Event(String name, ArrayList<String> events) {
         this.name = name;
         this.events = events;
+        sha3String = toSha3HashString();
     }
 
 
@@ -72,6 +77,9 @@ public class Event {
         return events;
     }
 
+    public String getSha3String() {
+        return sha3String;
+    }
 
 
 }

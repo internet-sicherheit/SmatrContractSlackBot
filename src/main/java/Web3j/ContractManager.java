@@ -8,15 +8,17 @@ public class ContractManager {
 
     ArrayList<StoredContract> storedContracts = new ArrayList<>();
 
+
+
+    StoredContract currentlyLoadedContract = null;
+
     public void storeContract(StoredContract contract) {
 
         storedContracts.add(contract);
-
+    currentlyLoadedContract = contract;
         System.out.println(contract.getContractAddress());
 
     }
-
-
     public String deleteContract(String contractAddress) {
 
         boolean contractExists = false;
@@ -32,6 +34,26 @@ public class ContractManager {
         else
             return "Contract does not exists in the manager";
 
+    }
+
+    public String switchCurrentlyLoadedContract(String contractAddress)
+    {
+
+        boolean success = false;
+        for (int i = 0; i < storedContracts.size(); i++) {
+            if(storedContracts.get(i).getContractAddress() == contractAddress)
+            {
+                currentlyLoadedContract = storedContracts.get(i);
+
+                success = true;
+            }
+
+        }
+
+        if(success)
+            return "Successfully loaded Contract";
+        else
+            return "Contract couldnt be loaded";
     }
 
 
@@ -61,4 +83,7 @@ public class ContractManager {
 
 
 
+    public StoredContract getCurrentlyLoadedContract() {
+        return currentlyLoadedContract;
+    }
 }
