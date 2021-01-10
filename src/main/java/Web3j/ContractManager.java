@@ -10,12 +10,12 @@ public class ContractManager {
 
 
 
-    StoredContract currentlyLoadedContract = null;
+    StoredContract activeContract = null;
 
     public void storeContract(StoredContract contract) {
 
         storedContracts.add(contract);
-    currentlyLoadedContract = contract;
+    activeContract = contract;
         System.out.println(contract.getContractAddress());
 
     }
@@ -43,7 +43,7 @@ public class ContractManager {
         for (int i = 0; i < storedContracts.size(); i++) {
             if(storedContracts.get(i).getContractAddress() == contractAddress)
             {
-                currentlyLoadedContract = storedContracts.get(i);
+                activeContract = storedContracts.get(i);
 
                 success = true;
             }
@@ -64,6 +64,8 @@ public class ContractManager {
 
     }
 
+
+
     public StoredContract getContract(String contractAddress) {
 
         StoredContract a = null;
@@ -83,7 +85,7 @@ public class ContractManager {
 
 
 
-    public StoredContract getCurrentlyLoadedContract() {
-        return currentlyLoadedContract;
+    public StoredContract getActiveContract() {
+        return activeContract;
     }
 }

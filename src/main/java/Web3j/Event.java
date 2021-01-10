@@ -5,7 +5,7 @@ import java.util.ArrayList;
 
 public class Event {
     private String name;
-    private ArrayList<String> events;
+    private ArrayList<String> parameters;
 
 
 
@@ -13,7 +13,14 @@ public class Event {
 
     public Event(String name, ArrayList<String> events) {
         this.name = name;
-        this.events = events;
+        this.parameters = events;
+        sha3String = toSha3HashString();
+    }
+
+    public Event(String name)
+    {
+        this.name = name;
+        this.parameters = null;
         sha3String = toSha3HashString();
     }
 
@@ -23,9 +30,11 @@ public class Event {
     public String toString() {
         String txt = name;
 
-        for (int i = 0; i < events.size(); i++) {
-            txt += "Param " + i + ":";
-            txt += events.get(i);
+        for (int i = 0; i < parameters.size(); i++) {
+            int a = i+1;
+
+            txt += " Parameter" + a + ": ";
+            txt += parameters.get(i);
         }
 
         return txt;
@@ -34,11 +43,11 @@ public class Event {
     public String toSha3HashString() {
         String txt = name;
         txt += "(";
-        for (int i = 0; i < events.size(); i++) {
+        for (int i = 0; i < parameters.size(); i++) {
 
-            txt += events.get(i);
+            txt += parameters.get(i);
 
-            if (!(i == events.size() - 1)) {
+            if (!(i == parameters.size() - 1)) {
                 txt += ",";
             }
         }
@@ -74,7 +83,7 @@ public class Event {
     }
 
     public ArrayList<String> getEvents() {
-        return events;
+        return parameters;
     }
 
     public String getSha3String() {

@@ -10,6 +10,12 @@
 //        });
 
 
+            numberContract.newNumberEventFlowable(DefaultBlockParameterName.LATEST, DefaultBlockParameterName.LATEST).subscribe(event -> {
+
+                //Event emit notice
+                //return event.number?
+                ctx.say("" + event.number);
+            });
 
 //        app.command("/hello2", (req, ctx) -> {
 //            // ctx.client() holds a valid bot token

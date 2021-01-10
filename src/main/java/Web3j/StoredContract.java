@@ -18,6 +18,18 @@ public class StoredContract {
     }
 
 
+    @Override
+    public String toString() {
+        String txt = "ContractAddress = " + contractAddress + "\nEvents:\n" ;
+
+        for (int i = 0; i < events.size(); i++) {
+            txt += events.get(i).toString() +"\n";
+        }
+
+        return txt;
+    }
+
+
     public String getContractAddress() {
         return contractAddress;
     }
