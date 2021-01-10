@@ -2,11 +2,11 @@ import Web3j.Event;
 import Web3j.StoredContract;
 import Web3j.Web3jMain;
 import com.slack.api.bolt.App;
-import com.slack.api.bolt.context.builtin.SlashCommandContext;
+
 import com.slack.api.bolt.jetty.SlackAppServer;
-import com.slack.api.bolt.request.builtin.SlashCommandRequest;
+
 import com.slack.api.methods.SlackApiException;
-import com.slack.api.webhook.WebhookResponse;
+
 import org.web3j.model.old.NumberContract;
 import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.methods.request.EthFilter;
@@ -20,7 +20,7 @@ import java.util.ArrayList;
 public class MyApp {
 
 
-    private static boolean initL;
+
 
 
     //private static SampleHandler sampleHandler;
@@ -31,9 +31,6 @@ public class MyApp {
 
         App app = new App();
 
-        //  sampleHandler = new SampleHandler(app);
-
-        //
         Web3jMain web3j = new Web3jMain();
 
         NumberContract numberContract = web3j.getNumberContract();
@@ -42,67 +39,68 @@ public class MyApp {
 //            return ctx.ack(res -> res.responseType("in_channel").text("I'm a bot to interact with Smart Contracts and listen to events"));        });
 
 
-        //   Store Number contract
-        app.command("/storenumber", (req, ctx) -> {
-            String botRespondText;
-            String commandArgText = req.getPayload().getText();
-            int number;
-
-            try {
-                number = Integer.parseInt(commandArgText);
-
-            } catch (NumberFormatException e) {
-
-                botRespondText = "Could not handle: " + commandArgText + ". Please enter a correct number";
-                return ctx.ack(botRespondText);
-            }
-
-            try {
-                numberContract.storeNumber(BigInteger.valueOf(number)).send();
-            } catch (Exception e) {
-                e.printStackTrace();
-                return ctx.ack("Something went wrong");
-            }
-            botRespondText = "Your number has been stored into the Contract";
-
-            ctx.say("hed");
-
-            return ctx.ack(botRespondText); // respond with 200 OK
-        });
-
 
 
         /*sets the eventnames for the contract
             User has to give all event names of the contract seperated by spaces
         */
-
-
         app.command("/storecontract", (req, ctx) -> {
 
-            web3j.storeNewContractFromSlack(req.getPayload().getText());
+            try {
+                web3j.storeNewContractFromSlack(req.getPayload().getText());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
-            return ctx.ack("stored contract address");
+            return ctx.ack("Stored the contractaddress and it's events and is now the active Contract ");
+
+
+        });
+        app.command("/switchActiveContract", (req, ctx) -> {
+
+            String successMessage = null;
+            try {
+                successMessage = web3j.switchActiveContract(req.getPayload().getText());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            return ctx.ack(successMessage);
 
 
         });
 
-        app.command("/listentoallevents", (req, ctx) -> {
+
+//        app.command("/listentoallevents", (req, ctx) -> {
+//
+//
+//            EthFilter filter = new EthFilter(DefaultBlockParameterName.LATEST, DefaultBlockParameterName.LATEST, numberContract.getContractAddress().substring(2));
+//
+//
+//            web3j.getWeb3j().ethLogFlowable(filter).subscribe(log -> botPostListenerMessage(log));
+//
+//            return ctx.ack("Added listener to contract");
+//
+//
+//        });
+
+        app.command("/listentoeventx", (req, ctx) -> {
 
 
-            EthFilter filter = new EthFilter(DefaultBlockParameterName.LATEST, DefaultBlockParameterName.LATEST, numberContract.getContractAddress().substring(2));
+            String successMessage = "";
+            successMessage = web3j.listenToEventX(req.getPayload().getText());
 
 
-            web3j.getWeb3j().ethLogFlowable(filter).subscribe(log -> botPostListenerMessage(log, req, ctx));
-
-
-            return ctx.ack("Added listener to contract");
-
-
+            return ctx.ack(successMessage);
         });
+
+
 
 
         //listen to specific event
         app.command("/info", (req, ctx) -> {
+
+
 
             ArrayList<StoredContract> contracts = web3j.getContractManager().getStoredContracts();
             String contractsString = "";
@@ -173,38 +171,50 @@ public class MyApp {
 //            return ctx.ack();
 //        });
 
+
+       // app.command("/storenumber", (req, ctx) -> {
+//            String botRespondText;
+//            String commandArgText = req.getPayload().getText();
+//            int number;
+//
+//            try {
+//                number = Integer.parseInt(commandArgText);
+//
+//            } catch (NumberFormatException e) {
+//
+//                botRespondText = "Could not handle: " + commandArgText + ". Please enter a correct number";
+//                return ctx.ack(botRespondText);
+//            }
+//
+//            try {
+//                numberContract.storeNumber(BigInteger.valueOf(number)).send();
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//                return ctx.ack("Something went wrong");
+//            }
+//            botRespondText = "Your number has been stored into the Contract";
+//
+//            ctx.say("hed");
+//
+//            return ctx.ack(botRespondText); // respond with 200 OK
+//        });
+
         SlackAppServer server = new SlackAppServer(app);
         server.start();
 
     }
 
-    private static void botPostListenerMessage(Log log, SlashCommandRequest req, SlashCommandContext ctx) throws IOException, SlackApiException {
+    private static void botPostListenerMessage(Log log) throws IOException, SlackApiException {
 
 
-        System.out.println(initL);
 
 
-        if (initL) {
-
-
-            WebhookResponse result = ctx.respond(res -> res
-                    .responseType("ephemeral") // or "in_channnel"
-                    .text(log.toString()) // blocks, attachments are also available
-            );
-
-        } else {
-            initL = true;
-        }
 
 
         System.out.println(log.getData() + " /n" + log.getTopics());
         System.out.println(log);
         System.out.println();
 
-
-        //currently called whenever there is any event. Shall only be called when a number is stored in future
-        //look at print for now
-        //ctx.say("addedNumber");
 
 
     }

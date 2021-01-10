@@ -1,19 +1,22 @@
 package Web3j;
 
-import com.slack.api.bolt.context.builtin.SlashCommandContext;
+
+import com.slack.api.methods.SlackApiException;
+import com.slack.api.webhook.WebhookResponse;
 import org.web3j.crypto.Credentials;
 import org.web3j.model.old.NumberContract;
 import org.web3j.protocol.Web3j;
-import org.web3j.protocol.core.DefaultBlockParameter;
+
 import org.web3j.protocol.core.DefaultBlockParameterName;
+import org.web3j.protocol.core.methods.request.EthFilter;
+import org.web3j.protocol.core.methods.response.Log;
 import org.web3j.protocol.http.HttpService;
 import org.web3j.tx.gas.StaticGasProvider;
 
-import java.lang.reflect.Array;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.io.IOException;
+
 import java.math.BigInteger;
-import java.security.NoSuchAlgorithmException;
+
 import java.util.ArrayList;
 
 public class Web3jMain {
@@ -42,51 +45,55 @@ public class Web3jMain {
         contractManager = new ContractManager();
 
 
-        //NumberContractTests tests = new NumberContractTests(numberContract);
-        // TransactionReceipt transactionReceipt = numberContract.storeNumber(BigInteger.valueOf(5)).send();
-
-    }
-
-    private void setEventNames() {
+        //For faster testing
+        // loadContract("0x89da503E68803B69833dfB0e6F18E96470430897");
+        // storeNewContractFromSlack("0x89da503E68803B69833dfB0e6F18E96470430897 , newNumberStored uint256, calledRequestNumberFunction");
 
 
     }
 
 
-    public void listenToEventX(String eventname, SlashCommandContext ctx) {
-        numberContract.newNumberEventFlowable(DefaultBlockParameterName.LATEST, DefaultBlockParameterName.LATEST).subscribe(event -> {
+    public String listenToEventX(String eventname) throws IOException, SlackApiException {
 
-            //Event emit notice
-            //return event.number?
-            ctx.say("" + event.number);
-        });
-    }
+        StoredContract activeContract = contractManager.getActiveContract();
+        Event eventX = null;
+        boolean eventExists = false;
+        boolean multipleEventsFound = false;
 
-    public void callMethod(String name) {
-
-        Method method = null;
-        try {
+        for (int i = 0; i < activeContract.getEvents().size(); i++) {
 
 
-            method = numberContract.getClass().getMethod("new" + "name" + "flowable", DefaultBlockParameter.class, DefaultBlockParameter.class);
-        } catch (SecurityException e) {
-            System.out.println(e);
-        } catch (NoSuchMethodException e) {
-            System.out.println(e);
+            if (activeContract.getEvents().get(i).getName().equals(eventname)) {
 
+
+                if (!eventExists) {
+
+                    eventExists = true;
+                    eventX = activeContract.getEvents().get(i);
+                } else
+                    multipleEventsFound = true;
+            }
         }
 
-        try {
-            method.invoke(numberContract, DefaultBlockParameterName.LATEST, DefaultBlockParameterName.LATEST);
-        } catch (IllegalArgumentException e) {
-            System.out.println(e);
-        } catch (IllegalAccessException e) {
-            System.out.println(e);
-        } catch (InvocationTargetException e) {
-            System.out.println(e);
+        if (multipleEventsFound) {
+            return "specify parameters";
+        } else if (!eventExists) {
+            return "no such event";
+
+        } else if (eventExists) {
+
+            EthFilter filter = new EthFilter(DefaultBlockParameterName.LATEST, DefaultBlockParameterName.LATEST, numberContract.getContractAddress().substring(2));
+
+            filter.addSingleTopic(eventX.getSha3String());
+            web3j.ethLogFlowable(filter).subscribe(log -> printLog(log));
+
+
+            return "Sucessfully added listener to the event " + eventname;
         }
 
+        return "???";
     }
+
 
     //loads a contract onto the server via contractAddress
     private String loadContract(String contractAddress) throws Exception {
@@ -130,9 +137,9 @@ public class Web3jMain {
 
 */
 
-    public void storeNewContractFromSlack(String contractInformation) {
+    public void storeNewContractFromSlack(String contractInformation) throws Exception {
 
-        String parts[] = contractInformation.split(",", 2);
+        String parts[] = contractInformation.trim().split(",", 2);
 
         String contractAddress = parts[0];
 
@@ -140,11 +147,13 @@ public class Web3jMain {
 
         contractManager.storeContract(new StoredContract(contractAddress, events));
 
+       switchActiveContract(contractAddress);
+
 
     }
 
-    public String switchActiveContract(String contractAddress)
-    {
+    public String switchActiveContract(String contractAddress) throws Exception {
+        loadContract(contractAddress);
         return contractManager.switchCurrentlyLoadedContract(contractAddress);
     }
 
@@ -181,6 +190,17 @@ public class Web3jMain {
 
 
         return events;
+    }
+
+
+    private void printLog(Log log) {
+
+
+        System.out.println(log.getData() + " /n" + log.getTopics());
+        System.out.println(log);
+        System.out.println();
+
+
     }
 
 
