@@ -16,7 +16,7 @@ public class ContractManager {
 
         storedContracts.add(contract);
     activeContract = contract;
-        System.out.println(contract.getContractAddress());
+
 
     }
     public String deleteContract(String contractAddress) {

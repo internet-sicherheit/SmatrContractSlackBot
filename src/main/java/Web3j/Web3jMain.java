@@ -55,8 +55,11 @@ public class Web3jMain {
         boolean eventExists = false;
         boolean multipleEventsFound = false;
 
+
         for (int i = 0; i < activeContract.getEvents().size(); i++) {
 
+
+            System.out.println(activeContract.getEvents().get(i).getName() + " " + eventname);
 
             if (activeContract.getEvents().get(i).getName().equals(eventname)) {
 
@@ -73,6 +76,8 @@ public class Web3jMain {
         if (multipleEventsFound) {
             return "specify parameters";
         } else if (!eventExists) {
+
+
             return "no such event";
 
         } else if (eventExists) {
@@ -86,7 +91,7 @@ public class Web3jMain {
             web3j.ethLogFlowable(filter).subscribe(log -> printLog(log));
 
 
-            return "Sucessfully added listener to the event " + eventname;
+            return "Sucessfully added listener to the following event: " + eventname;
         }
 
         return "???";
@@ -113,26 +118,26 @@ public class Web3jMain {
 
 */
 
+
+    //TODO: Komma vergessen
     public void storeNewContractFromSlack(String contractInformation) throws Exception {
 
-        SlackMessage slackMessage = SlackMessage.builder()
-                .username("Contract-Bot")
-                .text("just testing")
-                .icon_emoji(":twice:")
-                .build();
-        SlackUtils.sendMessage(slackMessage);
+
         String parts[] = contractInformation.trim().split(",", 2);
 
         String contractAddress = parts[0];
 
+        for (int i = 0; i < parts.length; i++) {
+            System.out.println(parts[i]);
 
-        System.out.println(parts.length);
+        }
+
         if (parts.length > 1) {
             ArrayList<Event> events = eventsToArrayList(parts[1]);
 
             contractManager.storeContract(new StoredContract(contractAddress, events));
 
-            System.out.println(contractManager.getContract(contractAddress).getEvents());
+
 
         } else {
             contractManager.storeContract(new StoredContract(contractAddress));
@@ -185,10 +190,23 @@ public class Web3jMain {
 
     private void printLog(Log log) {
 
+        String eventName = "noEvent";
 
-        System.out.println(log.getData() + " /n" + log.getTopics());
-        System.out.println(log);
-        System.out.println();
+        for (int i = 0; i < contractManager.getActiveContract().getEvents().size(); i++) {
+
+            if(contractManager.getActiveContract().getEvents().get(i).getSha3String().equals(log.getTopics().get(0))){
+    eventName = contractManager.getActiveContract().getEvents().get(i).getName();
+            }
+
+        }
+
+        SlackMessage slackMessage = SlackMessage.builder()
+                .username("Contract-Bot")
+                .text("New Event notification: " + eventName+"\nData: " + log.getData())
+                .icon_emoji(":twice:")
+                .build();
+        SlackUtils.sendMessage(slackMessage);
+
 
 
     }
