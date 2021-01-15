@@ -84,6 +84,9 @@ public class Web3jMain {
 
             EthFilter filter = new EthFilter(DefaultBlockParameterName.LATEST, DefaultBlockParameterName.LATEST, numberContract.getContractAddress().substring(2));
 
+
+            System.out.println(eventX.getSha3String());
+
             filter.addSingleTopic(eventX.getSha3String());
             web3j.ethLogFlowable(filter).subscribe(log -> printLog(log));
 
@@ -138,14 +141,23 @@ public class Web3jMain {
 */
 
     public void storeNewContractFromSlack(String contractInformation) throws Exception {
-
         String parts[] = contractInformation.trim().split(",", 2);
 
         String contractAddress = parts[0];
 
-        ArrayList<Event> events = eventsToArrayList(parts[1]);
 
-        contractManager.storeContract(new StoredContract(contractAddress, events));
+        System.out.println(parts.length);
+        if(parts.length>1) {
+          ArrayList<Event>  events = eventsToArrayList(parts[1]);
+
+            contractManager.storeContract(new StoredContract(contractAddress, events));
+
+            System.out.println(contractManager.getContract(contractAddress).getEvents());
+
+        }else
+        {
+            contractManager.storeContract(new StoredContract(contractAddress));
+        }
 
        switchActiveContract(contractAddress);
 

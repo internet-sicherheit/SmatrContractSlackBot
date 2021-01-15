@@ -17,6 +17,10 @@ public class StoredContract {
         this.events = events;
     }
 
+    public StoredContract(String contractAddress) {
+        this.contractAddress = contractAddress;
+    }
+
 
     @Override
     public String toString() {
