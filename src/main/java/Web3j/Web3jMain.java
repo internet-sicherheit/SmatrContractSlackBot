@@ -141,6 +141,13 @@ public class Web3jMain {
 */
 
     public void storeNewContractFromSlack(String contractInformation) throws Exception {
+
+        SlackMessage slackMessage = SlackMessage.builder()
+                .username("Contract-Bot")
+                .text("just testing")
+                .icon_emoji(":twice:")
+                .build();
+        SlackUtils.sendMessage(slackMessage);
         String parts[] = contractInformation.trim().split(",", 2);
 
         String contractAddress = parts[0];
@@ -159,7 +166,7 @@ public class Web3jMain {
             contractManager.storeContract(new StoredContract(contractAddress));
         }
 
-       switchActiveContract(contractAddress);
+      // switchActiveContract(contractAddress);
 
 
     }
@@ -206,6 +213,8 @@ public class Web3jMain {
 
 
     private void printLog(Log log) {
+
+
 
 
         System.out.println(log.getData() + " /n" + log.getTopics());
