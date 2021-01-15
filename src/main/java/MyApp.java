@@ -7,12 +7,9 @@ import com.slack.api.bolt.jetty.SlackAppServer;
 
 import com.slack.api.methods.SlackApiException;
 
-import org.web3j.model.old.NumberContract;
-import org.web3j.protocol.core.DefaultBlockParameterName;
-import org.web3j.protocol.core.methods.request.EthFilter;
 import org.web3j.protocol.core.methods.response.Log;
+import org.web3j.tx.Contract;
 
-import java.math.BigInteger;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -30,10 +27,8 @@ public class MyApp {
 
 
         App app = new App();
-
         Web3jMain web3j = new Web3jMain();
 
-        NumberContract numberContract = web3j.getNumberContract();
 
 //        app.command("/info", (req, ctx) -> {
 //            return ctx.ack(res -> res.responseType("in_channel").text("I'm a bot to interact with Smart Contracts and listen to events"));        });

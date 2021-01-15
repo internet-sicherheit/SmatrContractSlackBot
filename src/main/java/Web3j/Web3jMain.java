@@ -2,15 +2,15 @@ package Web3j;
 
 
 import com.slack.api.methods.SlackApiException;
-import com.slack.api.webhook.WebhookResponse;
+
 import org.web3j.crypto.Credentials;
-import org.web3j.model.old.NumberContract;
 import org.web3j.protocol.Web3j;
 
 import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.methods.request.EthFilter;
 import org.web3j.protocol.core.methods.response.Log;
 import org.web3j.protocol.http.HttpService;
+import org.web3j.tx.Contract;
 import org.web3j.tx.gas.StaticGasProvider;
 
 import java.io.IOException;
@@ -25,7 +25,7 @@ public class Web3jMain {
     private Web3j web3j;
     private Credentials creds;
     private StaticGasProvider gasProvider;
-    private NumberContract numberContract;
+    private Contract contract;
 
 
     ContractManager contractManager;
@@ -36,11 +36,6 @@ public class Web3jMain {
 
         //Provides a HttpService to local Ganache Blockchain and creates credentials from a private key from that blockchain
         web3j = Web3j.build(new HttpService("HTTP://127.0.0.1:7545"));
-        creds = Credentials.create("44e746bdf08a465df59f94566643376d9f7a89128c6bac16562bb8da839b82a9");
-
-
-        //A Gasprovider for later use with ethereum network (local)
-        gasProvider = new StaticGasProvider(BigInteger.valueOf(1000), BigInteger.valueOf(1000000));
 
         contractManager = new ContractManager();
 
@@ -82,7 +77,7 @@ public class Web3jMain {
 
         } else if (eventExists) {
 
-            EthFilter filter = new EthFilter(DefaultBlockParameterName.LATEST, DefaultBlockParameterName.LATEST, numberContract.getContractAddress().substring(2));
+            EthFilter filter = new EthFilter(DefaultBlockParameterName.LATEST, DefaultBlockParameterName.LATEST, contractManager.getActiveContract().getContractAddress().substring(2));
 
 
             System.out.println(eventX.getSha3String());
@@ -95,28 +90,6 @@ public class Web3jMain {
         }
 
         return "???";
-    }
-
-
-    //loads a contract onto the server via contractAddress
-    private String loadContract(String contractAddress) throws Exception {
-
-
-        if ((NumberContract.load(contractAddress, web3j, creds, gasProvider) != null)) {
-            System.out.println("Loaded Contract");
-            numberContract = NumberContract.load(contractAddress, web3j, creds, gasProvider);
-            return "Contract loaded successfully";
-        } else {
-            System.out.println("Please deploy the contract first or check your given address");
-            return "Please deploy the contract first or check your given address";
-        }
-
-
-    }
-
-
-    public NumberContract getNumberContract() {
-        return numberContract;
     }
 
 
@@ -154,25 +127,23 @@ public class Web3jMain {
 
 
         System.out.println(parts.length);
-        if(parts.length>1) {
-          ArrayList<Event>  events = eventsToArrayList(parts[1]);
+        if (parts.length > 1) {
+            ArrayList<Event> events = eventsToArrayList(parts[1]);
 
             contractManager.storeContract(new StoredContract(contractAddress, events));
 
             System.out.println(contractManager.getContract(contractAddress).getEvents());
 
-        }else
-        {
+        } else {
             contractManager.storeContract(new StoredContract(contractAddress));
         }
 
-      // switchActiveContract(contractAddress);
+        // switchActiveContract(contractAddress);
 
 
     }
 
     public String switchActiveContract(String contractAddress) throws Exception {
-        loadContract(contractAddress);
         return contractManager.switchCurrentlyLoadedContract(contractAddress);
     }
 
@@ -213,8 +184,6 @@ public class Web3jMain {
 
 
     private void printLog(Log log) {
-
-
 
 
         System.out.println(log.getData() + " /n" + log.getTopics());
