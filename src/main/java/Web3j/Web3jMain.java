@@ -28,27 +28,18 @@ public class Web3jMain {
     private Contract contract;
 
 
+    //delete later
+    private int count = 0;
+
+
     ContractManager contractManager;
 
 
     public Web3jMain() throws Exception {
-
-
-        //Provides a HttpService to local Ganache Blockchain and creates credentials from a private key from that blockchain
         web3j = Web3j.build(new HttpService("https://core.bloxberg.org"));
-
-
-        System.out.println( web3j.web3ClientVersion().send().getWeb3ClientVersion());
-
         contractManager = new ContractManager();
 
-
-
-
         //iscc 0x4945d63B509e137b0293Bd958cf97B61996c0fB9
-
-        //For faster testing
-        // loadContract("0x89da503E68803B69833dfB0e6F18E96470430897");
          storeNewContractFromSlack("0x4945d63B509e137b0293Bd958cf97B61996c0fB9, ISCC address bytes bytes");
          listenToEventX("ISCC");
 
@@ -59,51 +50,18 @@ public class Web3jMain {
     public String listenToEventX(String eventname) throws IOException, SlackApiException {
 
         StoredContract activeContract = contractManager.getActiveContract();
-        Event eventX = null;
+        Event eventX = activeContract.getEvents().get(0);
         boolean eventExists = false;
         boolean multipleEventsFound = false;
 
-
-        for (int i = 0; i < activeContract.getEvents().size(); i++) {
-
-
-            System.out.println("ListenToEventX: Active Contract Event:" + i + " " + activeContract.getEvents().get(i).getName() + " " + "Gegebenes Event: " +  eventname);
-
-            if (activeContract.getEvents().get(i).getName().equals(eventname)) {
+        EthFilter filter = new EthFilter(DefaultBlockParameterName.EARLIEST, DefaultBlockParameterName.LATEST, contractManager.getActiveContract().getContractAddress());
 
 
-                if (!eventExists) {
-
-                    eventExists = true;
-                    eventX = activeContract.getEvents().get(i);
-                } else
-                    multipleEventsFound = true;
-            }
-        }
-
-        if (multipleEventsFound) {
-            return "specify parameters";
-        } else if (!eventExists) {
+        filter.addSingleTopic(eventX.getSha3String());
+        web3j.ethLogFlowable(filter).subscribe(log -> printLog(log));
 
 
-            return "no such event";
-
-        } else if (eventExists) {
-
-            EthFilter filter = new EthFilter(DefaultBlockParameterName.LATEST, DefaultBlockParameterName.LATEST, contractManager.getActiveContract().getContractAddress());
-            //EthFilter filter = new EthFilter(DefaultBlockParameterName.LATEST, DefaultBlockParameterName.LATEST, contractManager.getActiveContract().getContractAddress().substring(2));
-
-
-            System.out.println("Keccak string : " + eventX.getSha3String());
-
-           filter.addSingleTopic(eventX.getSha3String());
-            web3j.ethLogFlowable(filter).subscribe(log -> printLog(log));
-
-
-            return "Sucessfully added listener to the following event: " + eventname;
-        }
-
-        return "???";
+        return "Sucessfully added listener to the following event: " + eventname;
     }
 
 
@@ -111,16 +69,6 @@ public class Web3jMain {
         return web3j;
     }
 
-
-    public boolean compareEventHashWithTopics(String eventHash) {
-
-        return true;
-    }
-
-
-    public String eventNameToSha3Hash(String eventname) {
-        return Hash.sha3String(eventname);
-    }
 
 /*This function needs a string in this way:
     ContractAddress,Event1 param1 param2 ..., Event2 param1 param2, ...
@@ -154,10 +102,6 @@ public class Web3jMain {
         // switchActiveContract(contractAddress);
 
 
-    }
-
-    public String switchActiveContract(String contractAddress) throws Exception {
-        return contractManager.switchCurrentlyLoadedContract(contractAddress);
     }
 
 
@@ -202,7 +146,7 @@ public class Web3jMain {
     private void printLog(Log log) {
 
 
-        System.out.println("helo");
+
         String eventName = "noEvent";
 
         for (int i = 0; i < contractManager.getActiveContract().getEvents().size(); i++) {
@@ -215,14 +159,17 @@ public class Web3jMain {
 
         }
 
-        SlackMessage slackMessage = SlackMessage.builder()
-                .username("Contract-Bot")
-                .text("New Event notification: " + eventName+"\nData: " + log.getData())
-                .icon_emoji(":twice:")
-                .build();
-        SlackUtils.sendMessage(slackMessage);
+if(count < 5) {
+    System.out.println("event");
+    SlackMessage slackMessage = SlackMessage.builder()
+            .username("Contract-Bot")
+            .text("New Event notification: " + eventName + "\nData: " + log.getData())
+            .icon_emoji(":twice:")
+            .build();
+    SlackUtils.sendMessage(slackMessage);
+}
 
-
+        count++;
 
     }
 
