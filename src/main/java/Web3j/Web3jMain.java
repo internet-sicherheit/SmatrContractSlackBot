@@ -35,14 +35,22 @@ public class Web3jMain {
 
 
         //Provides a HttpService to local Ganache Blockchain and creates credentials from a private key from that blockchain
-        web3j = Web3j.build(new HttpService("HTTP://127.0.0.1:7545"));
+        web3j = Web3j.build(new HttpService("https://core.bloxberg.org"));
+
+
+        System.out.println( web3j.web3ClientVersion().send().getWeb3ClientVersion());
 
         contractManager = new ContractManager();
 
 
+
+
+        //iscc 0x4945d63B509e137b0293Bd958cf97B61996c0fB9
+
         //For faster testing
         // loadContract("0x89da503E68803B69833dfB0e6F18E96470430897");
-        // storeNewContractFromSlack("0x89da503E68803B69833dfB0e6F18E96470430897 , newNumberStored uint256, calledRequestNumberFunction");
+         storeNewContractFromSlack("0x4945d63B509e137b0293Bd958cf97B61996c0fB9, ISCC address bytes bytes");
+         listenToEventX("ISCC");
 
 
     }
@@ -59,7 +67,7 @@ public class Web3jMain {
         for (int i = 0; i < activeContract.getEvents().size(); i++) {
 
 
-            System.out.println(activeContract.getEvents().get(i).getName() + " " + eventname);
+            System.out.println("ListenToEventX: Active Contract Event:" + i + " " + activeContract.getEvents().get(i).getName() + " " + "Gegebenes Event: " +  eventname);
 
             if (activeContract.getEvents().get(i).getName().equals(eventname)) {
 
@@ -82,12 +90,13 @@ public class Web3jMain {
 
         } else if (eventExists) {
 
-            EthFilter filter = new EthFilter(DefaultBlockParameterName.LATEST, DefaultBlockParameterName.LATEST, contractManager.getActiveContract().getContractAddress().substring(2));
+            EthFilter filter = new EthFilter(DefaultBlockParameterName.LATEST, DefaultBlockParameterName.LATEST, contractManager.getActiveContract().getContractAddress());
+            //EthFilter filter = new EthFilter(DefaultBlockParameterName.LATEST, DefaultBlockParameterName.LATEST, contractManager.getActiveContract().getContractAddress().substring(2));
 
 
-            System.out.println(eventX.getSha3String());
+            System.out.println("Keccak string : " + eventX.getSha3String());
 
-            filter.addSingleTopic(eventX.getSha3String());
+           filter.addSingleTopic(eventX.getSha3String());
             web3j.ethLogFlowable(filter).subscribe(log -> printLog(log));
 
 
@@ -127,10 +136,9 @@ public class Web3jMain {
 
         String contractAddress = parts[0];
 
-        for (int i = 0; i < parts.length; i++) {
-            System.out.println(parts[i]);
-
-        }
+       // for (int i = 0; i < parts.length; i++) {
+       //     System.out.println(parts[i]);
+//}
 
         if (parts.length > 1) {
             ArrayList<Event> events = eventsToArrayList(parts[1]);
@@ -168,7 +176,10 @@ public class Web3jMain {
         //Creates Array with all Events
         String[] allEventStrings = eventsString.trim().split(",");
 
+
+
         for (int i = 0; i < allEventStrings.length; i++) {
+            System.out.println(allEventStrings[i]);
 
             //Creates Array that contains every parameter of the current event
             String[] singleEventString = allEventStrings[i].trim().split("\\s+");
@@ -190,12 +201,16 @@ public class Web3jMain {
 
     private void printLog(Log log) {
 
+
+        System.out.println("helo");
         String eventName = "noEvent";
 
         for (int i = 0; i < contractManager.getActiveContract().getEvents().size(); i++) {
 
             if(contractManager.getActiveContract().getEvents().get(i).getSha3String().equals(log.getTopics().get(0))){
     eventName = contractManager.getActiveContract().getEvents().get(i).getName();
+
+
             }
 
         }
